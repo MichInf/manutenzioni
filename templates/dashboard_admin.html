@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Administrator{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+    <!-- Header -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Dashboard Administrator</h1>
+                <p class="text-gray-600">Benvenuto, {{ user.get_full_name|default:user.username }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards statistiche -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-blue-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-2">Cabine Totali</h3>
+            <p class="text-3xl font-bold">{{ total_cabine }}</p>
+        </div>
+        <div class="bg-green-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-2">Componenti</h3>
+            <p class="text-3xl font-bold">{{ total_componenti }}</p>
+        </div>
+        <div class="bg-red-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-2">Alert Attivi</h3>
+            <p class="text-3xl font-bold">{{ alert_totali }}</p>
+        </div>
+        <div class="bg-yellow-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-2">Scadenze</h3>
+            <p class="text-3xl font-bold">{{ cabine_scadute|add:componenti_scaduti }}</p>
+        </div>
+    </div>
+
+    <!-- Menu azioni -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Gestione Cabine</h3>
+            <p class="text-gray-600 mb-4">Visualizza e gestisci le cabine elettriche</p>
+            <a href="{% url 'lista_cabine' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full inline-block text-center">
+                Visualizza Cabine
+            </a>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Alert e Scadenze</h3>
+            <p class="text-gray-600 mb-4">Monitora alert e scadenze manutenzioni</p>
+            <a href="{% url 'lista_alert' %}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full inline-block text-center">
+                Visualizza Alert
+            </a>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Pannello Admin</h3>
+            <p class="text-gray-600 mb-4">Gestisci utenti, cabine e componenti</p>
+            <a href="/admin/" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full inline-block text-center">
+                Pannello Admin
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

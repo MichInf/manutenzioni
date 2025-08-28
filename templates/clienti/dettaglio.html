@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cliente.nome_azienda }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ cliente.nome_azienda }}</h1>
+            <p class="text-gray-600">{{ cliente.responsabile }}</p>
+        </div>
+        {% if user.is_administrator or user.is_controlroom %}
+        <a href="{% url 'modifica_cliente' cliente.id %}"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Modifica Cliente
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Cards informazioni -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4">Informazioni Cliente</h2>
+            <dl class="space-y-2">
+                <div>
+                    <dt class="font-medium">Email:</dt>
+                    <dd>{{ cliente.email }}</dd>
+                </div>
+                {% if cliente.email2 %}
+                <div>
+                    <dt class="font-medium">Email 2:</dt>
+                    <dd>{{ cliente.email2 }}</dd>
+                </div>
+                {% endif %}
+                <div>
+                    <dt class="font-medium">Telefono:</dt>
+                    <dd>{{ cliente.telefono_responsabile }}</dd>
+                </div>
+                {% if cliente.note %}
+                <div>
+                    <dt class="font-medium">Note:</dt>
+                    <dd>{{ cliente.note }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4">Statistiche</h2>
+            <div class="text-3xl font-bold text-blue-600">{{ cabine.count }}</div>
+            <div class="text-gray-600">Cabine attive</div>
+        </div>
+    </div>
+
+    <!-- Lista cabine -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b">
+            <h2 class="text-lg font-semibold">Cabine</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for cabina in cabine %}
+            <div class="px-6 py-4">
+                <a href="{% url 'dettaglio_cabina' cabina.matricola %}" class="block hover:bg-gray-50 -mx-6 px-6 py-2">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-medium">{{ cabina.matricola }} - {{ cabina.nome }}</div>
+                            <div class="text-sm text-gray-500">{{ cabina.guardiania }}</div>
+                        </div>
+                        <div class="text-sm text-gray-500">→</div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="px-6 py-4 text-center text-gray-500">
+                Nessuna cabina associata
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

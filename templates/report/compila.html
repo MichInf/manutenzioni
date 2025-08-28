@@ -1,0 +1,129 @@
+{# templates/report/compila.html #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6">
+
+      
+      <div class="mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Compila Report</h1>
+        <div class="mt-2 text-gray-600 text-sm sm:text-base flex flex-col sm:flex-row sm:items-center sm:gap-6">
+          <p>Cabina: <strong>{{ report.cabina }}</strong></p>
+          <p>Template: <strong>{{ report.template.nome }}</strong> (v{{ report.template.versione }})</p>
+          <p>Stato: <strong>{{ report.get_stato_display }}</strong></p>
+        </div>
+      </div>
+
+      {# ERRORI GLOBALI #}
+      {% if form.non_field_errors %}
+        <div class="mb-6 rounded border border-red-300 bg-red-50 text-red-700 px-4 py-2 text-sm">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        {# SEZIONI #}
+        {% for section in form.bound_sections %}
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
+              {{ section.title }}
+              {% if section.frequency %}
+                <span class="ml-2 inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                  {{ section.frequency }}
+                </span>
+              {% endif %}
+            </h2>
+
+            <div class="space-y-5">
+              {% for el in section.items %}
+                {% with field=el.field item=el.item value=el.value %}
+
+                  {# CHECKBOX (tap-target più grande) #}
+                  {% if item.type == "bool" %}
+                    <div>
+                      <label class="flex items-center">
+                        {{ field}}
+                        <span class="ml-3 text-sm text-gray-700">{{ item.label }}</span>
+                      </label>
+                      {% if field.help_text %}
+                        <p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>
+                      {% endif %}
+                      {% if field.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>
+                      {% endif %}
+                    </div>
+
+                  {# INPUT STANDARD + IMAGE #}
+                  {% else %}
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">{{ item.label }}</label>
+
+                      {% if item.type == "textarea" %}
+                        {{ field}}
+                      {% elif item.type == "image" %}
+                        {{ field}}
+                      {% else %}
+                        {{ field}}
+                      {% endif %}
+
+                      {% if field.help_text %}
+                        <p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>
+                      {% endif %}
+                      {% if field.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>
+                      {% endif %}
+
+                      {# ANTEPRIME IMMAGINI: griglia responsiva #}
+                      {% if item.type == "image" and value %}
+                        <div class="mt-3">
+                          <p class="text-xs text-gray-500 mb-2">Immagini caricate:</p>
+                          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            {% for url in value %}
+                              <a href="{{ url }}" target="_blank" class="block rounded-md overflow-hidden border border-gray-200">
+                                <img src="{{ url }}" alt="{{ item.label }} {{ forloop.counter }}" class="w-full h-28 object-cover">
+                              </a>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              {% endfor %}
+            </div>
+          </div>
+
+          {% if not forloop.last %}
+            <hr class="my-6 border-gray-200">
+          {% endif %}
+        {% endfor %}
+
+        {# AZIONI: stacked su mobile, inline su desktop #}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+          <a href="{% url 'dettaglio_cabina' report.cabina.matricola %}"
+             class="w-full sm:w-auto text-center bg-gray-500 hover:bg-gray-700 text-white font-bold py-2.5 px-4 rounded">
+            ← Annulla
+          </a>
+
+          <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button type="submit" name="salva"
+                    class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2.5 px-4 rounded border border-gray-300">
+              💾 Salva bozza
+            </button>
+            <button type="submit" name="invia"
+                    class="w-full sm:w-auto bg-orange-500 hover:bg-orange-700 text-white font-bold py-2.5 px-4 rounded">
+              ✅ Invia report
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Aggiungi Componente - {{ cabina.matricola }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+    <!-- Header -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Aggiungi Componente</h1>
+                <p class="text-gray-600">Cabina: <strong>{{ cabina.matricola }}</strong> - {{ cabina.descrizione }}</p>
+            </div>
+            <a href="{% url 'dettaglio_cabina' cabina.matricola %}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                ← Torna alla Cabina
+            </a>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white shadow-lg rounded-lg p-8">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Tipo Componente -->
+            <div class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Tipo Componente</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.tipo_componente.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.tipo_componente.label }}
+                        </label>
+                        {{ form.tipo_componente }}
+                        {% if form.tipo_componente.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.tipo_componente.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.codice.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.codice.label }}
+                        </label>
+                        {{ form.codice }}
+                        {% if form.codice.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.codice.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descrizione -->
+            <div class="border-b border-gray-200 pb-6">
+                <label for="{{ form.descrizione.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                    {{ form.descrizione.label }}
+                </label>
+                {{ form.descrizione }}
+                {% if form.descrizione.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.descrizione.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Date -->
+            <div class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Date Manutenzione</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.data_installazione.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.data_installazione.label }}
+                        </label>
+                        {{ form.data_installazione }}
+                        {% if form.data_installazione.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.data_installazione.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.data_ultima_manutenzione.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.data_ultima_manutenzione.label }}
+                        </label>
+                        {{ form.data_ultima_manutenzione }}
+                        {% if form.data_ultima_manutenzione.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.data_ultima_manutenzione.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stato e Note -->
+            <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">
+                            {{ form.attivo.label }}
+                        </label>
+                        <div class="mt-1">
+                            {{ form.attivo }}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label for="{{ form.note.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.note.label }}
+                    </label>
+                    {{ form.note }}
+                    {% if form.note.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.note.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pulsanti -->
+            <div class="flex justify-end space-x-4 pt-6">
+                <a href="{% url 'dettaglio_cabina' cabina.matricola %}" 
+                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded">
+                    Annulla
+                </a>
+                <button type="submit" 
+                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">
+                    Aggiungi Componente
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

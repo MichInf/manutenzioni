@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Elimina Componente - {{ componente.tipo_componente.nome }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+    <!-- Header -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-red-600 mb-2">⚠️ Elimina Componente</h1>
+                <p class="text-gray-600">
+                    Stai per eliminare definitivamente questo componente
+                </p>
+            </div>
+            <a href="{% url 'dettaglio_cabina' componente.cabina.matricola %}" 
+               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                ← Annulla
+            </a>
+        </div>
+    </div>
+
+    <!-- Dettagli Componente -->
+    <div class="bg-white shadow-lg rounded-lg p-8 mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-6">Dettagli Componente da Eliminare</h3>
+        
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-4 h-4 rounded-full mr-3" 
+                             style="background-color: {{ componente.tipo_componente.colore }};">
+                        </div>
+                        <span class="text-lg font-bold text-gray-900">
+                            {{ componente.tipo_componente.nome }}
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div><strong>Cabina:</strong> {{ componente.cabina.matricola }}</div>
+                        {% if componente.codice %}
+                            <div><strong>Codice:</strong> {{ componente.codice }}</div>
+                        {% endif %}
+                        <div><strong>Installazione:</strong> {{ componente.data_installazione|date:"d/m/Y" }}</div>
+                        {% if componente.data_ultima_manutenzione %}
+                            <div><strong>Ultima Manutenzione:</strong> {{ componente.data_ultima_manutenzione|date:"d/m/Y" }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="mb-4">
+                        <strong class="text-gray-700">Descrizione:</strong>
+                        <p class="text-gray-600 mt-1">{{ componente.descrizione }}</p>
+                    </div>
+                    
+                    {% if componente.note %}
+                        <div>
+                            <strong class="text-gray-700">Note:</strong>
+                            <p class="text-gray-600 mt-1">{{ componente.note }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conferma Eliminazione -->
+    <div class="bg-white shadow-lg rounded-lg p-8">
+        <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Conferma Eliminazione</h3>
+            <p class="text-sm text-gray-500 mb-6">
+                Questa azione non può essere annullata. Il componente verrà eliminato definitivamente dal sistema.
+            </p>
+            
+            <form method="post" class="inline">
+                {% csrf_token %}
+                <div class="flex justify-center space-x-4">
+                    <a href="{% url 'dettaglio_cabina' componente.cabina.matricola %}" 
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded">
+                        Annulla
+                    </a>
+                    <button type="submit" 
+                            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded">
+                        🗑️ Elimina Definitivamente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

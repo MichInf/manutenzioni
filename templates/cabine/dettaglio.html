@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Cabina {{ cabina.matricola }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl md:max-w-5xl mx-auto px-4 pt-4 pb-24 md:pb-8">
+
+  <!-- Tabs: scrollabile su mobile -->
+  <div class="mb-4 md:mb-6 border-b border-gray-200">
+    <ul id="tabs"
+        class="-mx-4 px-4 flex overflow-x-auto no-scrollbar gap-2 md:gap-4 text-sm md:text-base font-medium text-gray-600">
+      <li>
+        <button type="button" 
+                class="tab-button min-w-max px-3 md:px-4 py-2 border-b-2 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-t"
+                data-tab="tab-info" >
+          Info & Servizi
+        </button>
+      </li>
+      <li>
+        <button type="button"
+                class="tab-button min-w-max px-3 md:px-4 py-2 border-b-2 border-transparent hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-t relative"
+                data-tab="tab-componenti" >
+          Componenti
+          {% if componenti_alert %}
+          <span class="absolute -top-0.5 -right-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+          {% endif %}
+        </button>
+      </li>
+      <li>
+        <button type="button"
+                class="tab-button min-w-max px-3 md:px-4 py-2 border-b-2 border-transparent hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-t relative"
+                data-tab="tab-manutenzioni">
+          Manutenzioni
+          {% if manutenzioni_alert %}
+          <span class="absolute -top-0.5 -right-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+          {% endif %}
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- TAB: Info & Servizi -->
+  <div id="tab-info" class="tab-content">
+    {% include 'cabine/partials/tab_info.html' %}
+  </div>
+
+  <!-- TAB: Componenti -->
+  <div id="tab-componenti" class="tab-content hidden">
+    {% include 'cabine/partials/tab_componenti.html' %}
+  </div>
+
+  <!-- TAB: Manutenzioni -->
+  <div id="tab-manutenzioni" class="tab-content hidden">
+    {% include 'cabine/partials/tab_manutenzioni.html' %}
+  </div>
+</div>
+
+<!-- CSS util per nascondere scrollbar su tab bar mobile -->
+<style>
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+
+<!-- JS gestione tabs: aggiorna hash e focus -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  function activateTab(tabId) {
+    tabButtons.forEach(btn => {
+      btn.classList.remove('border-blue-600','text-blue-700');
+     
+    });
+    tabContents.forEach(tab => tab.classList.add('hidden'));
+
+    const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+    if (activeBtn) {
+      activeBtn.classList.add('border-blue-600','text-blue-700');    
+    }
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) activeTab.classList.remove('hidden');
+  }
+
+  // Click handler
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const id = button.dataset.tab;
+      activateTab(id);
+      history.replaceState(null, '', `#${id}`);
+    });
+  });
+
+  // Attiva tab da hash o default
+  const initial = location.hash?.replace('#','') || 'tab-info';
+  activateTab(initial);
+
+});
+</script>
+{% endblock %}

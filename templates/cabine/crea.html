@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Crea Nuova Cabina{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="bg-white shadow-lg rounded-lg p-6">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        {# campi comuni #}
+        {% include 'cabine/partials/_creamodifica_cabina_formfield.html' %}
+
+        {# servizi associati con Alpine #}
+        {% include 'cabine/partials/_creamodifica_cabina_servizi.html' %}
+        <div class="flex justify-between pt-6">
+          <a href="{% url 'lista_cabine' %}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">← Annulla</a>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">💾 Crea Cabina</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

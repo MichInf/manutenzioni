@@ -1,0 +1,108 @@
+ <!-- Lista Componenti -->
+    <div class="bg-white shadow-lg rounded-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Componenti ({{ componenti.count }})</h2>
+            {% if user.is_administrator or user.is_controlroom %}
+            <a href="{% url 'aggiungi_componente' cabina.matricola %}"
+                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                + Componente
+            </a>
+            {% endif %}
+        </div>
+
+        {% if componenti %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tipo
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Data Installazione
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Stato Manutenzione
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Prossima Scadenza
+                        </th>
+                        {% if user.is_administrator or user.is_controlroom %}
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Azioni
+                        </th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for componente in componenti %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm font-medium text-gray-900">
+                                {{ componente.tipo.nome }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ componente.data_installazione|date:"d/m/Y"|default:"-" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {% if componente.stato == 'ok' %}bg-green-100 text-green-800
+                                    {% elif componente.stato == 'in_scadenza' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if componente.stato == 'ok' %}✅ OK
+                                {% elif componente.stato == 'in_scadenza' %}⚠️ In Scadenza
+                                {% else %}🚨 Scaduta{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ componente.prossima|date:"d/m/Y"|default:"-" }}
+                            {% if componente.giorni %}
+                            <div class="text-xs text-gray-500">
+                                {% if componente.giorni > 0 %}
+                                tra {{ componente.giorni }} giorni
+                                {% else %}
+                                {{ componente.giorni|add:"0"|floatformat:"0" }} giorni fa
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </td>
+                        {% if user.is_administrator or user.is_controlroom %}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'modifica_componente' componente.id %}"
+                                    class="text-blue-600 hover:text-blue-900">
+                                    ✏️
+                                </a>
+                                <a href="{% url 'elimina_componente' componente.id %}"
+                                    class="text-red-600 hover:text-red-900"
+                                    onclick="return confirm('Sei sicuro di voler eliminare questo componente?')">
+                                    🗑️
+                                </a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Nessun componente</h3>
+            <p class="mt-1 text-sm text-gray-500">Inizia aggiungendo il primo componente a questa cabina.</p>
+            {% if user.is_administrator or user.is_controlroom %}
+            <div class="mt-6">
+                <a href="{% url 'aggiungi_componente' cabina.matricola %}"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                    + Aggiungi Primo Componente
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>

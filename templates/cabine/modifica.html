@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Modifica Cabina - {{ cabina.matricola }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="bg-white shadow-lg rounded-lg p-6">
+      <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Modifica Cabina</h1>
+        <p class="text-gray-600 mt-2">Cabina: <strong>{{ cabina.matricola }}</strong></p>
+      </div>
+
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        {# campi comuni #}
+        {% include 'cabine/partials/_creamodifica_cabina_formfield.html' %}
+
+        {# stessi servizi associati di Crea, ma precompilati #}
+        {% include 'cabine/partials/_creamodifica_cabina_servizi.html' %}
+
+        <div class="flex justify-between pt-6">
+          <a href="{% url 'dettaglio_cabina' cabina.matricola %}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">← Annulla</a>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">💾 Salva Modifiche</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

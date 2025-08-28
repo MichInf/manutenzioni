@@ -1,0 +1,73 @@
+{# Campi base, riusati da Crea/Modifica #}
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Matricola</label>
+  {{ form.matricola }}
+  {% if form.matricola.errors %}<p class="mt-1 text-sm text-red-600">{{ form.matricola.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+  {{ form.nome }}
+  {% if form.nome.errors %}<p class="mt-1 text-sm text-red-600">{{ form.nome.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
+  {{ form.cliente }}
+  {% if form.cliente.errors %}<p class="mt-1 text-sm text-red-600">{{ form.cliente.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Fonte</label>
+  {{ form.fonte }}
+  {% if form.fonte.errors %}<p class="mt-1 text-sm text-red-600">{{ form.fonte.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Guardiania</label>
+  {{ form.guardiania }}
+  {% if form.guardiania.errors %}<p class="mt-1 text-sm text-red-600">{{ form.guardiania.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Telefono Guardiania</label>
+  {{ form.telefono_guardiania }}
+  {% if form.telefono_guardiania.errors %}<p class="mt-1 text-sm text-red-600">{{ form.telefono_guardiania.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Chiave</label>
+  {{ form.chiave }}
+  {% if form.chiave.errors %}<p class="mt-1 text-sm text-red-600">{{ form.chiave.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">POD</label>
+  {{ form.pod }}
+  {% if form.pod.errors %}<p class="mt-1 text-sm text-red-600">{{ form.pod.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Latitudine</label>
+  {{ form.latitudine }}
+  {% if form.latitudine.errors %}<p class="mt-1 text-sm text-red-600">{{ form.latitudine.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Longitudine</label>
+  {{ form.longitudine }}
+  {% if form.longitudine.errors %}<p class="mt-1 text-sm text-red-600">{{ form.longitudine.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Note</label>
+  {{ form.note }}
+  {% if form.note.errors %}<p class="mt-1 text-sm text-red-600">{{ form.note.errors.0 }}</p>{% endif %}
+</div>
+
+<div>
+  <label class="flex items-center">
+    {{ form.attiva }}
+    <span class="ml-2 text-sm text-gray-700">Cabina Attiva</span>
+  </label>
+</div>

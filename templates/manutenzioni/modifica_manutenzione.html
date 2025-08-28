@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifica Manutenzione - {{ cabina.matricola }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Modifica Manutenzione</h1>
+                <p class="text-gray-600 mt-2">Cabina: <strong>{{ cabina.matricola }}</strong></p>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Tipo Manutenzione
+                    </label>
+                    {{ form.tipo }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Data Programmata
+                    </label>
+                    {{ form.data_programmata }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Operatore
+                    </label>
+                    {{ form.operatore }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Stato
+                    </label>
+                    {{ form.stato }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Note
+                    </label>
+                    {{ form.note }}
+                </div>
+
+                <div class="flex justify-between pt-6">
+                    <a href="{% url 'dettaglio_cabina' cabina.matricola %}" 
+                       class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        ← Annulla
+                    </a>
+                    <button type="submit" 
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        💾 Salva Modifiche
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

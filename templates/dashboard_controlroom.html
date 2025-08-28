@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Controlroom{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+    <!-- Header -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Dashboard Controlroom</h1>
+                <p class="text-gray-600">Benvenuto, {{ user.get_full_name|default:user.username }}</p>
+            </div>
+            <a href="{% url 'logout' %}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards statistiche -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-blue-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-2">Cabine Gestite</h3>
+            <p class="text-3xl font-bold">150</p>
+        </div>
+        <div class="bg-red-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-2">Alert Scadenze</h3>
+            <p class="text-3xl font-bold">8</p>
+        </div>
+        <div class="bg-green-500 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-2">Operatori Attivi</h3>
+            <p class="text-3xl font-bold">5</p>
+        </div>
+    </div>
+
+    <!-- Menu azioni -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Gestione Cabine</h3>
+            <p class="text-gray-600 mb-4">Visualizza e gestisci le cabine elettriche</p>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">
+                Visualizza Cabine
+            </button>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Assegna Manutenzioni</h3>
+            <p class="text-gray-600 mb-4">Assegna manutenzioni agli operatori</p>
+            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full">
+                Assegna Lavori
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabella alert recenti -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden mt-8">
+        <div class="px-6 py-4 bg-gray-50 border-b">
+            <h2 class="text-xl font-semibold text-gray-800">Alert Recenti</h2>
+        </div>
+        <div class="p-6">
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2 text-left">Cabina</th>
+                            <th class="px-4 py-2 text-left">Componente</th>
+                            <th class="px-4 py-2 text-left">Scadenza</th>
+                            <th class="px-4 py-2 text-left">Priorità</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="px-4 py-2">CAB001</td>
+                            <td class="px-4 py-2">Interruttore</td>
+                            <td class="px-4 py-2">15/08/2024</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">Alta</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-4 py-2">CAB025</td>
+                            <td class="px-4 py-2">Estintore</td>
+                            <td class="px-4 py-2">20/08/2024</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm">Media</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
