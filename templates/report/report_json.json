@@ -7,22 +7,42 @@
         {
           "name": "controllo_bulloneria_connessioni_terra",
           "label": "Controllo del corretto serraggio della bulloneria delle connessioni di terra",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_lampade_presenza_tensione",
           "label": "Verifica dell'efficienza delle lampade di segnalazione di presenza tensione con eventuale sostituzione",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_segnalazione_posizioni_apparati",
           "label": "Verifica della corretta segnalazione grafica/ottica delle posizioni del sezionatore di terra e dell'interruttore",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_funzionamento_riscaldamento",
           "label": "Verifica funzionale del circuito di riscaldamento",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         }
       ]
     },
@@ -33,47 +53,92 @@
         {
           "name": "pulizia_interna_esterna",
           "label": "Pulizia interna ed esterna",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_lampade_segnalazione_bt",
           "label": "Verifica dell'efficienza delle lampade di segnalazione",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_strumentazione_resistenze_anticondensa",
           "label": "Verifica dell'efficienza della strumentazione e delle resistenze anticondensa",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_illuminazione_interna_quadro",
           "label": "Verifica dell'efficienza dell'illuminazione interna al quadro",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_dispositivi_protezione_comando",
           "label": "Verifica del corretto funzionamento elettromeccanico dei dispositivi di protezione e comando",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_dispositivi_chiusura_carpenterie",
           "label": "Verifica dell'efficienza dei dispositivi di chiusura delle carpenterie per il previsto grado di protezione",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_fusibili_bt",
           "label": "Verifica dell'efficienza dei fusibili",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_etichettatura_circuiti_apparecchiature",
           "label": "Verifica della corretta indicazione di circuiti ed apparecchiature",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_connessioni_morsettiera_serraggio",
           "label": "Verifica delle connessioni elettriche in morsettiera ed eventuale serraggio",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         }
       ]
     },
@@ -84,22 +149,42 @@
         {
           "name": "verifica_integrita_manufatti",
           "label": "Verifica dello stato di integrità dei manufatti (tamponature cunicoli, porte, infissi, serrature), ingrassaggio cerniere e ripristino tinteggiatura",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "pulizia_locali_con_aspiratore",
           "label": "Pulizia con aspiratore all'interno dei locali",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "controllo_roditori_distribuzione_esche",
           "label": "Controllo e rilievo della presenza di roditori e distribuzione di esche ratticida all'interno dei basamenti",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_presenza_integrita_aspiratori",
           "label": "Verifica della presenza ed integrità aspiratori",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         }
       ]
     },
@@ -110,22 +195,42 @@
         {
           "name": "verifica_presenza_dpi_atti_alla_manovra",
           "label": "Verifica della presenza di dispositivi (fioretti isolanti, terna corde per m.a.t., tappeti isolanti, guanti isolanti, lampade portatili di emergenza, leve di manovra ed estrazione, casco con visiera)",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_cartelli_monitori_soccorso",
           "label": "Verifica della presenza di cartelli monitori e di soccorso",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_esposizione_schema_unifilare",
           "label": "Verifica della esposizione dello schema unifilare della cabina",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         },
         {
           "name": "verifica_presenza_estintori_stato_carica",
           "label": "Verifica della presenza di estintori e controllo dello stato di carica",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         }
       ]
     },
@@ -136,7 +241,12 @@
         {
           "name": "controllo_funzionamento_prese",
           "label": "Controllo delle funzionalità delle prese",
-          "type": "bool"
+          "type": "bool",
+          "required": false,
+          "note": true,
+          "note_type": "textarea",
+          "note_label": "Note",
+          "note_help": "Dettagli / anomalie"
         }
       ]
     }

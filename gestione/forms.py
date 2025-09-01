@@ -56,7 +56,7 @@ class CabinaForm(forms.ModelForm):
     )
     class Meta:
         model = Cabina
-        fields = ['nome', 'matricola', 'cliente', 'fonte', 'guardiania', 'chiave', 'pod', 'telefono_guardiania', 'latitudine', 'longitudine', 'attiva', 'note']
+        fields = ['nome', 'matricola', 'cliente', 'fonte', 'guardiania', 'chiave', 'pod', 'telefono_guardiania', 'latitudine', 'longitudine', 'attiva', 'note', 'template_report']
         widgets = {
             'nome': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900 placeholder-gray-500',
@@ -104,6 +104,9 @@ class CabinaForm(forms.ModelForm):
             'attiva': forms.CheckboxInput(attrs={
                 'class': 'w-5 h-5 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500'
             }),
+            'template_report': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900'
+            })
         }
 class ComponenteForm(forms.ModelForm):
     class Meta:
@@ -318,8 +321,27 @@ def build_report_form(schema: dict, *, data=None, files=None, initial=None, rela
             help_text = it.get("help", "")
 
             if ftype == "bool":
-                field = forms.BooleanField(required=required, label=label, help_text=help_text)
-                _style_field(field, "bool")
+                allow_note = it.get("note") or it.get("note_type") or it.get("note_label") or it.get("note_help")
+                if allow_note:
+                    note_name = f"{name}__note"
+                    note_label = it.get("note_label", "Note")
+                    note_help = it.get("note_help", "")
+                    note_type = (it.get("note_type") or "textarea").lower()
+
+                    if note_type == "text":
+                        note_field = forms.CharField(required=False, label=note_label, help_text=note_help)
+                        _style_field(note_field, "text")
+                    else:
+                        note_field = forms.CharField(
+                            required=False,
+                            label=note_label,
+                            help_text=note_help,
+                            widget=forms.Textarea()
+                        )
+                        _style_field(note_field, "textarea")
+
+                    fields[note_name] = note_field
+                    names_in_section.append(note_name)
 
             elif ftype == "text":
                 field = forms.CharField(required=required, label=label, help_text=help_text)
@@ -408,12 +430,17 @@ def build_report_form(schema: dict, *, data=None, files=None, initial=None, rela
                     val = [_media_urlize(x) for x in val]
                 else:
                     val = [_media_urlize(val)]
+            note_field = None
+        note_name = f"{name}__note"
+        if note_name in form.fields:
+            note_field = form[note_name]
 
-            bound_items.append({
-                "item": it,
-                "field": form[name],
-                "value": val,  # per il template
-            })
+        bound_items.append({
+            "item": it,
+            "field": form[name],
+            "value": val,          
+            "note_field": note_field
+        })
         bound_sections.append({
             "title": sec.get("title", ""),
             "frequency": sec.get("frequency", ""),

@@ -28,7 +28,7 @@ class ClienteAdmin(admin.ModelAdmin):
 @admin.register(Cabina)
 class CabinaAdmin(admin.ModelAdmin):
     form = CabinaAdminForm
-    list_display = ('matricola', 'nome', 'cliente', 'guardiania', 'attiva')
+    list_display = ('matricola', 'nome', 'cliente', 'guardiania', 'attiva','template_report')
     list_filter = ('attiva', 'cliente')
     search_fields = ('matricola', 'nome', 'cliente__nome_azienda', 'pod')
 

@@ -81,6 +81,16 @@ class Cabina(models.Model):
     attiva = models.BooleanField(default=True, verbose_name="Attiva")
     note = models.TextField(blank=True, verbose_name="Note")
     
+    template_report = models.ForeignKey(
+        'ReportTemplate',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cabine_assegnate',
+        verbose_name="Template report"
+    )
+ 
+
     def __str__(self):
         return f"{self.matricola} - {self.nome}"
     

@@ -439,7 +439,7 @@ def programma_manutenzione(request, matricola):
             manutenzione.creata_da = request.user
             manutenzione.save()
             messages.success(request, f"Manutenzione {manutenzione.get_tipo_display()} programmata per {manutenzione.data_programmata}!")
-            return redirect('dettaglio_cabina', matricola=cabina.matricola)
+            return redirect(reverse('dettaglio_cabina', kwargs={'matricola': cabina.matricola}) + '#tab-manutenzioni')
     else:
         form = ManutenzioneProgrammataForm()
     
@@ -447,15 +447,18 @@ def programma_manutenzione(request, matricola):
 
 @login_required
 def completa_manutenzione(request, pk):
+    
     if request.method != "POST":
         messages.error(request, "Richiesta non valida.")
         return redirect('dashboard')
 
     manut = get_object_or_404(ManutenzioneProgrammata, pk=pk)
+    url = reverse('dettaglio_cabina', kwargs={'matricola': manut.cabina.matricola})
 
     if manut.stato == "completata":
         messages.info(request, "Questa manutenzione risulta già completata.")
-        return redirect('dettaglio_cabina', matricola=manut.cabina.matricola)
+        
+        return redirect(f"{url}#tab-manutenzioni")
 
     # data completamento
     date_str = request.POST.get("data_completamento")
@@ -464,7 +467,7 @@ def completa_manutenzione(request, pk):
             data_compl = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             messages.error(request, "Formato data non valido (YYYY-MM-DD).")
-            return redirect('dettaglio_cabina', matricola=manut.cabina.matricola)
+            return redirect(f"{url}#tab-manutenzioni")
     else:
         data_compl = timezone.localdate()
 
@@ -493,7 +496,7 @@ def completa_manutenzione(request, pk):
 
     messages.success(request, "Manutenzione segnata come completata.")
     messages.success(request, "Prossima manutenzione creata.")
-    return redirect('dettaglio_cabina', matricola=manut.cabina.matricola)
+    return redirect(f"{url}#tab-manutenzioni")
 
 
 @login_required
@@ -534,7 +537,7 @@ def modifica_manutenzione(request, manutenzione_id):
         if form.is_valid():
             form.save()
             messages.success(request, f"Manutenzione {manutenzione.get_tipo_display()} modificata!")
-            return redirect('dettaglio_cabina', matricola=manutenzione.cabina.matricola)
+            return redirect(reverse('dettaglio_cabina', kwargs={'matricola': manutenzione.cabina.matricola}) + '#tab-manutenzioni')
     else:
         form = ModificaManutenzioneProgrammataForm(instance=manutenzione)
     
@@ -574,16 +577,7 @@ def _can_fill_reports(user):
 
 # Selezione template con priorità: cabina+frequenza → cabina → frequenza → generico
 def seleziona_template(cabina, frequenza: str | None):
-    qs = ReportTemplate.objects.filter(attivo=True)
-    if frequenza:
-        t = qs.filter(cabine=cabina, frequenza=frequenza).first()
-        if t: return t
-    t = qs.filter(cabine=cabina).filter(models.Q(frequenza="") | models.Q(frequenza__isnull=True)).first()
-    if t: return t
-    if frequenza:
-        t = qs.filter(cabine__isnull=True, frequenza=frequenza).distinct().first()
-        if t: return t
-    return qs.filter(cabine__isnull=True).distinct().first()
+    return getattr(cabina, "template_report", None)
 
 
 @login_required
@@ -607,7 +601,10 @@ def report_compila(request, pk):
     # template assegnato
     template = seleziona_template(manut.cabina, frequenza)  # implementato da te
     if not template:
-        messages.error(request, "Nessun template disponibile/assegnato per questa cabina.")
+        messages.error(
+        request,
+        "Nessun template assegnato alla cabina. Assegna un template report dalla scheda cabina oppure contatta l’amministratore."
+        )
         return redirect('dettaglio_cabina', matricola=manut.cabina.matricola)
 
     # crea/recupera report
