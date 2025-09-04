@@ -304,7 +304,366 @@ class MultiImageField(forms.Field):
             raise ValidationError("Carica almeno una immagine.")
         return files
 
-def build_report_form(schema: dict, *, data=None, files=None, initial=None, relax_file_required: bool=False) -> forms.Form:
+def build_report_form(schema: dict, *, data=None, files=None, initial=None, relax_file_required: bool = False) -> forms.Form:
+    """
+    Costruisce un Form dinamico a partire da schema JSON.
+    - In GET:  usa initial=report.dati
+    - In POST: usa data=request.POST, files=request.FILES
+    La form restituita espone:
+      - form.sections = [(title, [field_names]), ...]
+      - form.bound_sections = [{title, frequency, items:[{item, field, value, note_field}]}]
+    """
+
+    fields = {}
+    sections_meta = []
+
+    for section in schema.get("sections", []):
+        title = section.get("title", "")
+        items = section.get("items", [])
+        names_in_section = []
+
+        for it in items:
+            name = it["name"]
+            label = it.get("label", name)
+            required = bool(it.get("required", False))
+            ftype = it.get("type", "text")
+            help_text = it.get("help", "")
+
+            # Campo booleano
+            if ftype == "bool":
+                field = forms.BooleanField(required=required, label=label, help_text=help_text)
+                _style_field(field, "bool")
+
+                # eventuale campo nota
+                allow_note = it.get("note") or it.get("note_type") or it.get("note_label") or it.get("note_help")
+                if allow_note:
+                    note_name = f"{name}__note"
+                    note_label = it.get("note_label", "Note")
+                    note_help = it.get("note_help", "")
+                    note_type = (it.get("note_type") or "textarea").lower()
+
+                    if note_type == "text":
+                        note_field = forms.CharField(required=False, label=note_label, help_text=note_help)
+                        _style_field(note_field, "text")
+                    else:
+                        note_field = forms.CharField(
+                            required=False,
+                            label=note_label,
+                            help_text=note_help,
+                            widget=forms.Textarea()
+                        )
+                        _style_field(note_field, "textarea")
+
+                    fields[note_name] = note_field
+                    names_in_section.append(note_name)
+
+            elif ftype == "text":
+                field = forms.CharField(required=required, label=label, help_text=help_text)
+                _style_field(field, "text")
+
+            elif ftype == "textarea":
+                field = forms.CharField(
+                    required=required,
+                    label=label,
+                    help_text=help_text,
+                    widget=forms.Textarea()
+                )
+                _style_field(field, "textarea")
+
+            elif ftype == "number":
+                field = forms.FloatField(
+                    required=required,
+                    label=label,
+                    help_text=help_text,
+                    min_value=it.get("min"),
+                    max_value=it.get("max")
+                )
+                _style_field(field, "number")
+
+            elif ftype == "date":
+                field = forms.DateField(
+                    required=required,
+                    label=label,
+                    help_text=help_text,
+                    input_formats=["%Y-%m-%d"],
+                    widget=forms.DateInput(attrs={"type": "date"})
+                )
+                _style_field(field, "date")
+
+            elif ftype == "select":
+                options = it.get("options", [])
+                choices = [(o, o) for o in options]
+                if not required:
+                    choices = [("", "—")] + choices
+                field = forms.ChoiceField(
+                    required=required,
+                    label=label,
+                    help_text=help_text,
+                    choices=choices
+                )
+                _style_field(field, "select")
+
+            elif ftype == "image":
+                required_eff = required and not relax_file_required
+                if it.get("multiple"):
+                    field = MultiImageField(
+                        required=required_eff,
+                        label=label,
+                        help_text=help_text,
+                        widget=MultiFileInput(),
+                    )
+                else:
+                    field = forms.ImageField(
+                        required=required_eff,
+                        label=label,
+                        help_text=help_text,
+                    )
+                field.widget.attrs.update({
+                    "class": "mt-1 block w-full rounded-md border border-gray-300 shadow-sm "
+                             "focus:border-orange-500 focus:ring-orange-500 text-sm min-h-11 py-2.5",
+                    "accept": "image/*",
+                })
+
+            else:
+                # fallback
+                field = forms.CharField(required=required, label=label, help_text=help_text)
+                _style_field(field, "text")
+
+            fields[name] = field
+            names_in_section.append(name)
+
+        sections_meta.append((title, names_in_section))
+
+    # Costruzione form dinamica
+    ReportDynamicForm = type("ReportDynamicForm", (forms.Form,), fields)
+    form = ReportDynamicForm(data=data or None, files=files or None, initial=initial)
+    form.sections = sections_meta
+
+    # Costruzione bound_sections per il template
+    bound_sections = []
+    existing = initial or {}
+
+    for sec in schema.get("sections", []):
+        bound_items = []
+        for it in sec.get("items", []):
+            name = it["name"]
+            val = existing.get(name)
+
+            # normalizza immagini
+            if it.get("type") == "image":
+                if val is None:
+                    val = []
+                elif isinstance(val, (list, tuple)):
+                    val = [_media_urlize(x) for x in val]
+                else:
+                    val = [_media_urlize(val)]
+
+            # eventuale campo nota
+            note_field = None
+            note_name = f"{name}__note"
+            if note_name in form.fields:
+                note_field = form[note_name]
+
+            # campo principale
+            bound_items.append({
+                "item": it,
+                "field": form[name],
+                "value": val,
+                "note_field": note_field,  # collegate al checkbox
+            })
+
+        bound_sections.append({
+            "title": sec.get("title", ""),
+            "frequency": sec.get("frequency", ""),
+            "items": bound_items,
+        })
+
+    form.bound_sections = bound_sections
+    return form
+    """
+    Costruisce un Form dinamico a partire da schema JSON.
+    - In GET:  usa initial=report.dati
+    - In POST: usa data=request.POST, files=request.FILES
+    La form restituita espone:
+      - form.sections = [(title, [field_names]), ...]
+      - form.bound_sections = [{title, frequency, items:[{item, field, value}]}]
+    """
+
+    fields = {}
+    sections_meta = []
+
+    for section in schema.get("sections", []):
+        title = section.get("title", "")
+        items = section.get("items", [])
+        names_in_section = []
+
+        for it in items:
+            name = it["name"]
+            label = it.get("label", name)
+            required = bool(it.get("required", False))
+            ftype = it.get("type", "text")
+            help_text = it.get("help", "")
+
+            # Campo booleano
+            if ftype == "bool":
+                field = forms.BooleanField(required=required, label=label, help_text=help_text)
+                _style_field(field, "bool")
+
+                # eventuale campo Nota
+                allow_note = it.get("note") or it.get("note_type") or it.get("note_label") or it.get("note_help")
+                if allow_note:
+                    note_name = f"{name}__note"
+                    note_label = it.get("note_label", "Note")
+                    note_help = it.get("note_help", "")
+                    note_type = (it.get("note_type") or "textarea").lower()
+
+                    if note_type == "text":
+                        note_field = forms.CharField(required=False, label=note_label, help_text=note_help)
+                        _style_field(note_field, "text")
+                    else:
+                        note_field = forms.CharField(
+                            required=False,
+                            label=note_label,
+                            help_text=note_help,
+                            widget=forms.Textarea()
+                        )
+                        _style_field(note_field, "textarea")
+
+                    fields[note_name] = note_field
+                    names_in_section.append(note_name)
+
+            elif ftype == "text":
+                field = forms.CharField(required=required, label=label, help_text=help_text)
+                _style_field(field, "text")
+
+            elif ftype == "textarea":
+                field = forms.CharField(
+                    required=required,
+                    label=label,
+                    help_text=help_text,
+                    widget=forms.Textarea()
+                )
+                _style_field(field, "textarea")
+
+            elif ftype == "number":
+                field = forms.FloatField(
+                    required=required,
+                    label=label,
+                    help_text=help_text,
+                    min_value=it.get("min"),
+                    max_value=it.get("max")
+                )
+                _style_field(field, "number")
+
+            elif ftype == "date":
+                field = forms.DateField(
+                    required=required,
+                    label=label,
+                    help_text=help_text,
+                    input_formats=["%Y-%m-%d"],
+                    widget=forms.DateInput(attrs={"type": "date"})
+                )
+                _style_field(field, "date")
+
+            elif ftype == "select":
+                options = it.get("options", [])
+                choices = [(o, o) for o in options]
+                if not required:
+                    choices = [("", "—")] + choices
+                field = forms.ChoiceField(
+                    required=required,
+                    label=label,
+                    help_text=help_text,
+                    choices=choices
+                )
+                _style_field(field, "select")
+
+            elif ftype == "image":
+                required_eff = required and not relax_file_required
+                if it.get("multiple"):
+                    field = MultiImageField(
+                        required=required_eff,
+                        label=label,
+                        help_text=help_text,
+                        widget=MultiFileInput(),
+                    )
+                else:
+                    field = forms.ImageField(
+                        required=required_eff,
+                        label=label,
+                        help_text=help_text,
+                    )
+                field.widget.attrs.update({
+                    "class": "mt-1 block w-full rounded-md border border-gray-300 shadow-sm "
+                             "focus:border-orange-500 focus:ring-orange-500 text-sm min-h-11 py-2.5",
+                    "accept": "image/*",
+                })
+
+            else:
+                # fallback
+                field = forms.CharField(required=required, label=label, help_text=help_text)
+                _style_field(field, "text")
+
+            fields[name] = field
+            names_in_section.append(name)
+
+        sections_meta.append((title, names_in_section))
+
+    # Costruzione form dinamica
+    ReportDynamicForm = type("ReportDynamicForm", (forms.Form,), fields)
+    form = ReportDynamicForm(data=data or None, files=files or None, initial=initial)
+    form.sections = sections_meta
+
+    # Costruzione bound_sections per il template
+    bound_sections = []
+    existing = initial or {}
+
+    for sec in schema.get("sections", []):
+        bound_items = []
+        for it in sec.get("items", []):
+            name = it["name"]
+            val = existing.get(name)
+
+            # normalizza immagini
+            if it.get("type") == "image":
+                if val is None:
+                    val = []
+                elif isinstance(val, (list, tuple)):
+                    val = [_media_urlize(x) for x in val]
+                else:
+                    val = [_media_urlize(val)]
+
+            # campo principale
+            bound_items.append({
+                "item": it,
+                "field": form[name],
+                "value": val,
+                "note_field": None,
+            })
+
+            # eventuale campo nota
+            note_name = f"{name}__note"
+            if note_name in form.fields:
+                bound_items.append({
+                    "item": {
+                        "name": note_name,
+                        "label": it.get("note_label", "Note"),
+                        "type": it.get("note_type", "textarea"),
+                        "help": it.get("note_help", "")
+                    },
+                    "field": form[note_name],
+                    "value": existing.get(note_name),
+                    "note_field": None
+                })
+
+        bound_sections.append({
+            "title": sec.get("title", ""),
+            "frequency": sec.get("frequency", ""),
+            "items": bound_items,
+        })
+
+    form.bound_sections = bound_sections
+    return form
     fields = {}
     sections_meta = []
 
@@ -321,6 +680,8 @@ def build_report_form(schema: dict, *, data=None, files=None, initial=None, rela
             help_text = it.get("help", "")
 
             if ftype == "bool":
+                field = forms.BooleanField(required=required, label=label, help_text=help_text)
+                _style_field(field, "bool")
                 allow_note = it.get("note") or it.get("note_type") or it.get("note_label") or it.get("note_help")
                 if allow_note:
                     note_name = f"{name}__note"
@@ -370,10 +731,6 @@ def build_report_form(schema: dict, *, data=None, files=None, initial=None, rela
                     choices = [("", "—")] + choices
                 field = forms.ChoiceField(required=required, label=label, help_text=help_text, choices=choices)
                 _style_field(field, "select")
-
-            
-
-
 
             elif ftype == "image":
                 required_eff = required and not relax_file_required
@@ -438,9 +795,24 @@ def build_report_form(schema: dict, *, data=None, files=None, initial=None, rela
         bound_items.append({
             "item": it,
             "field": form[name],
-            "value": val,          
-            "note_field": note_field
+            "value": val,
+            "note_field": None   # solo il campo principale
         })
+
+        # Se esiste un campo note, aggiungilo come item separato
+        note_name = f"{name}__note"
+        if note_name in form.fields:
+            bound_items.append({
+                "item": {
+                    "name": note_name,
+                    "label": it.get("note_label", "Note"),
+                    "type": it.get("note_type", "textarea"),
+                    "help": it.get("note_help", "")
+                },
+                "field": form[note_name],
+                "value": existing.get(note_name),
+                "note_field": None
+            })
         bound_sections.append({
             "title": sec.get("title", ""),
             "frequency": sec.get("frequency", ""),
