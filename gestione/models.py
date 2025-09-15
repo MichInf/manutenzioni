@@ -138,6 +138,29 @@ class Cabina(models.Model):
         verbose_name_plural = "Cabine"
         ordering = ['matricola']
 
+
+class PianoManutenzione(models.Model):
+    class Tipo(models.TextChoices):
+        SEMESTRALE_ANNUALE = 'semestrale_annuale', 'Semestrale + Annuale'
+        ANNUALE_ONLY = 'annuale_only', 'Solo Annuale'
+        SPOT = 'spot', 'Spot'
+        MENSILE_LITE_ANNUALE = 'mensile_lite_annuale', 'Mensile Lite + Annuale'
+
+    cabina = models.OneToOneField(
+        'Cabina',
+        on_delete=models.CASCADE,
+        related_name='piano_manutenzione',
+    )
+    tipo = models.CharField(max_length=50, choices=Tipo.choices)
+    durata_contrattuale_mesi = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Durata contrattuale (mesi)",
+    )
+
+    def __str__(self):
+        return f"{self.cabina} - {self.get_tipo_display()}"
+
 class Componente(models.Model):
     cabina = models.ForeignKey(Cabina, on_delete=models.CASCADE, related_name='componenti')
     tipo = models.ForeignKey(TipoComponente, on_delete=models.CASCADE)

@@ -1,7 +1,21 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
-from .models import TipoComponente, Cliente, Cabina, Componente, Servizio, CabinaServizio, ManutenzioneProgrammata, ReportTemplate, ReportCompilato, ReportAttachment
+from .models import (
+    TipoComponente,
+    Cliente,
+    Cabina,
+    Componente,
+    Servizio,
+    CabinaServizio,
+    ManutenzioneProgrammata,
+    ReportTemplate,
+    ReportCompilato,
+    ReportAttachment,
+    PianoManutenzione,
+)
 from django import forms
+
+
 class CabinaAdminForm(forms.ModelForm):
     FONTE_SCELTE = [
         ('eolico', 'Eolico'),
@@ -25,12 +39,18 @@ class ClienteAdmin(admin.ModelAdmin):
     list_filter = ('attivo',)
     search_fields = ('nome_azienda', 'responsabile', 'email')
 
+class PianoManutenzioneInline(admin.StackedInline):
+    model = PianoManutenzione
+    extra = 0
+
+
 @admin.register(Cabina)
 class CabinaAdmin(admin.ModelAdmin):
     form = CabinaAdminForm
     list_display = ('matricola', 'nome', 'cliente', 'guardiania', 'attiva','template_report')
     list_filter = ('attiva', 'cliente')
     search_fields = ('matricola', 'nome', 'cliente__nome_azienda', 'pod')
+    inlines = [PianoManutenzioneInline]
 
 @admin.register(Componente)
 class ComponenteAdmin(admin.ModelAdmin):
