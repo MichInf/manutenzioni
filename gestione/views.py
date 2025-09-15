@@ -6,10 +6,13 @@ from django.utils import timezone
 from django.db import IntegrityError, transaction, models
 from .models import Cabina, Componente, TipoComponente, Cliente, ManutenzioneProgrammata, CabinaServizio, Servizio ,ReportTemplate, ReportCompilato, ReportAttachment
 from .forms import (CabinaForm, ComponenteForm, TipoComponenteForm, ClienteForm, ManutenzioneProgrammataForm, ManutenzioneCompletataForm, ModificaManutenzioneProgrammataForm, CabinaServizioFormSet, build_report_form)
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.core.files.storage import default_storage
 
 @csrf_exempt
 @login_required
@@ -687,6 +690,69 @@ def report_compila(request, pk):
     # --- GET ---
     form = build_report_form(report.schema_snapshot, initial=report.dati)
     return render(request, "report/compila.html", {"report": report, "form": form, "schema": report.schema_snapshot})
+
+@login_required
+def report_download(request, pk):
+    from .models import ManutenzioneProgrammata, ReportCompilato
+    manut = get_object_or_404(ManutenzioneProgrammata, pk=pk)
+
+    try:
+        report = manut.report
+    except ReportCompilato.DoesNotExist:
+        messages.error(request, "Nessun report compilato per questa manutenzione.")
+        return redirect('dettaglio_cabina', matricola=manut.cabina.matricola)
+
+    if report.stato != "inviato":
+        messages.error(request, "Il report non è ancora inviato, non è possibile scaricarlo.")
+        return redirect('report_compila', pk=pk)
+
+    # Mappa attachments: field -> [URL]
+    attachments_map = {}
+    for att in report.attachments.all():
+        attachments_map.setdefault(att.field_name, []).append(att.file.url)
+
+    # fallback: se in dati hai nomi file, prova a risolverli in URL
+    dati = report.dati or {}
+    for fname, names in list(dati.items()):
+        if isinstance(names, list) and fname not in attachments_map:
+            urls = []
+            for name in names:
+                try:
+                    urls.append(default_storage.url(name))
+                except Exception:
+                    pass
+            if urls:
+                attachments_map[fname] = urls
+
+    context = {
+        "report": report,
+        "cabina": report.cabina,
+        "manutenzione": manut,
+        "schema": report.schema_snapshot,
+        "dati": dati,
+        "attachments": attachments_map,
+        "base_url": request.build_absolute_uri("/"),
+    }
+
+    html = render_to_string("report/print.html", context=context, request=request)
+
+    data_rif = manut.data_completamento or manut.data_programmata
+    filename = f"Report_{report.cabina.matricola}_{data_rif:%Y%m%d}.pdf"
+
+    try:
+        from weasyprint import HTML, CSS
+    except Exception:
+        messages.error(
+            request,
+            "WeasyPrint non è installato/configurato. Esegui: pip install weasyprint"
+        )
+        return redirect('report_compila', pk=pk)
+
+    pdf = HTML(string=html, base_url=context["base_url"]).write_pdf(
+    )
+    resp = HttpResponse(pdf, content_type="application/pdf")
+    resp["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return resp
 
     
 def logout_view(request):

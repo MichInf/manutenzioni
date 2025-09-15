@@ -9,3 +9,10 @@ def get_unique_cabine(alert_list):
     for alert in alert_list:
         cabine_set.add(alert['cabina'].matricola)
     return list(cabine_set)
+
+@register.filter
+def get_item(d, key):
+    try:
+        return d.get(key)
+    except Exception:
+        return None

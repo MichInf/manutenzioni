@@ -23,6 +23,7 @@ urlpatterns = [
     path('manutenzione/<int:manutenzione_id>/modifica/', views.modifica_manutenzione, name='modifica_manutenzione'),
     path("manutenzioni/<int:pk>/completa/", views.completa_manutenzione, name="completa_manutenzione"),
     path("manutenzioni/<int:pk>/report/", views.report_compila, name="report_compila"),
+    path("manutenzioni/<int:pk>/report/download/", views.report_download, name="report_download"),
     path('ajax/crea-servizio/', views.crea_servizio_ajax, name='crea_servizio_ajax'),
     path('servizio/<int:servizio_id>/rinnova/', views.rinnova_servizio, name='rinnova_servizio'),
     path('logout/', views.logout_view, name='logout'),

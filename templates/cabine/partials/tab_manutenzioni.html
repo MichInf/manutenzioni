@@ -144,6 +144,20 @@
             {% else %}✍️ Compila Report{% endif %}
           </a>
           {% endif %}
+
+          {% if manutenzione.stato == 'completata' %}
+  <a href="
+     {% if manutenzione.report.stato == 'inviato' %}
+       {% url 'report_download' manutenzione.pk %}
+     {% else %}
+       {% url 'report_compila' manutenzione.pk %}
+     {% endif %}"
+     class="bg-blue-500 hover:bg-blue-600 text-white text-center py-2 px-3 rounded text-xs w-full md:w-auto block">
+    {% if manutenzione.report.stato == 'bozza' %}✍️ Continua Report
+    {% elif manutenzione.report.stato == 'inviato' %}⬇️ Scarica Report
+    {% else %}✍️ Compila Report{% endif %}
+  </a>
+{% endif %}
         </div>
       </div>
     </div>
