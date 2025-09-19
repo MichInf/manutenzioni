@@ -29,27 +29,24 @@
     {% for cabina in cabine %}
     <article class="bg-white shadow rounded-2xl p-4" onclick="window.location='{% url 'dettaglio_cabina' cabina.matricola %}'">
       <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <h2 class="text-lg font-semibold text-gray-900 break-all">{{ cabina.matricola }}</h2>
-          <p class="text-sm text-gray-600 truncate">{{ cabina.descrizione }}</p>
-        </div>
+        
         <!-- Stato manutenzione ordinaria -->
         <div class="shrink-0">
           {% if cabina.stato_ordinaria == 'scaduta' %}
             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-              Scaduta ({{ cabina.giorni_ordinaria }}g)
+              Manutenzione scaduta ({{ cabina.giorni_ordinaria }}g)
             </span>
           {% elif cabina.stato_ordinaria == 'in_scadenza' %}
             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-              In scadenza ({{ cabina.giorni_ordinaria }}g)
+              Manutenzione in scadenza ({{ cabina.giorni_ordinaria }}g)
             </span>
           {% elif cabina.stato_ordinaria == 'ok' %}
             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-              OK ({{ cabina.giorni_ordinaria }}g)
+              Prossima manutenzione ({{ cabina.giorni_ordinaria }}g)
             </span>
           {% else %}
             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-              Non programmata
+              Manutenzione non programmata
             </span>
           {% endif %}
         </div>
@@ -72,36 +69,31 @@
         </div>
 
         <!-- Componenti badge -->
-        <div class="flex flex-wrap items-center gap-1">
-          {% if cabina.componenti_ok > 0 %}
-            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-              {{ cabina.componenti_ok }} OK
-            </span>
-          {% endif %}
-          {% if cabina.componenti_scadenza > 0 %}
-            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-              {{ cabina.componenti_scadenza }} In scad.
-            </span>
-          {% endif %}
-          {% if cabina.componenti_scaduti > 0 %}
-            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-              {{ cabina.componenti_scaduti }} Scad.
-            </span>
-          {% endif %}
-          {% if cabina.componenti_ok == 0 and cabina.componenti_scadenza == 0 and cabina.componenti_scaduti == 0 %}
-            <span class="text-gray-500 text-xs">Nessun componente</span>
-          {% endif %}
-        </div>
+        
       </div>
 
       <div class="mt-3 flex items-center justify-between">
-        <span class="text-xs text-gray-500">Matricola: {{ cabina.matricola }}</span>
+        <span class="text-xs text-gray-500">Matricola: <strong>{{ cabina.matricola }}</strong></span>
+      </div>
+      <div class="mt-3 flex items-center justify-between">
+        <span class="text-xs text-gray-500">Nome: <strong>{{ cabina.nome }}</strong></span>
       </div>
     </article>
     {% empty %}
     <div class="text-center text-gray-500">Nessuna cabina trovata</div>
     {% endfor %}
   </section>
+  <!-- Barra di ricerca -->
+<form method="get" class="mb-4 flex items-center gap-2">
+  <input type="text" name="q" value="{{ search }}"
+         placeholder="Cerca per matricola o nome..."
+         class="flex-1 border rounded-lg px-3 py-2 text-sm"
+  >
+  <button type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+    Cerca
+  </button>
+</form>
 
   <!-- Tabella desktop -->
   <section class="hidden md:block bg-white shadow rounded-2xl overflow-hidden">
@@ -109,22 +101,56 @@
       <table class="min-w-full">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matricola</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrizione</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posizione GPS</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Manutenzione Ordinaria</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Componenti</th>
-            
+            {% for field, label in headers %}
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {% if sort == field and direction == 'asc' %}
+                  <a href="?sort={{ field }}&direction=desc" class="flex items-center gap-1 hover:underline">
+                    {{ label }} ▲
+                  </a>
+                {% elif sort == field and direction == 'desc' %}
+                  <a href="?sort={{ field }}&direction=asc" class="flex items-center gap-1 hover:underline">
+                    {{ label }} ▼
+                  </a>
+                {% else %}
+                  <a href="?sort={{ field }}&direction=asc" class="flex items-center gap-1 hover:underline">
+                    {{ label }}
+                  </a>
+                {% endif %}
+              </th>
+            {% endfor %}
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Posizione
+              </th>
           </tr>
         </thead>
+
         <tbody class="bg-white divide-y divide-gray-200">
           {% for cabina in cabine %}
           <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{% url 'dettaglio_cabina' cabina.matricola %}'">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm font-medium text-gray-900 break-all">{{ cabina.matricola }}</div>
             </td>
-            <td class="px-6 py-4">
-              <div class="text-sm text-gray-900">{{ cabina.descrizione|truncatechars:50 }}</div>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900 break-all">{{ cabina.nome }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              {% if cabina.stato_ordinaria == 'scaduta' %}
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                  Manutenzione Scaduta ({{ cabina.giorni_ordinaria }} giorni)
+                </span>
+              {% elif cabina.stato_ordinaria == 'in_scadenza' %}
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                  Manutenzione in scadenza ({{ cabina.giorni_ordinaria }} giorni)
+                </span>
+              {% elif cabina.stato_ordinaria == 'ok' %}
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                  Prossima manutenzione ({{ cabina.giorni_ordinaria }} giorni)
+                </span>
+              {% else %}
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                  Manutenzione non programmata
+                </span>
+              {% endif %}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               {% if cabina.latitudine and cabina.longitudine %}
@@ -133,44 +159,8 @@
                 <span class="text-gray-400">Non disponibile</span>
               {% endif %}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              {% if cabina.stato_ordinaria == 'scaduta' %}
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                  Scaduta ({{ cabina.giorni_ordinaria }} giorni)
-                </span>
-              {% elif cabina.stato_ordinaria == 'in_scadenza' %}
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                  In scadenza ({{ cabina.giorni_ordinaria }} giorni)
-                </span>
-              {% elif cabina.stato_ordinaria == 'ok' %}
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                  OK ({{ cabina.giorni_ordinaria }} giorni)
-                </span>
-              {% else %}
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                  Non programmata
-                </span>
-              {% endif %}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex flex-wrap gap-1">
-                {% if cabina.componenti_ok > 0 %}
-                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                    {{ cabina.componenti_ok }} OK
-                  </span>
-                {% endif %}
-                {% if cabina.componenti_scadenza > 0 %}
-                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    {{ cabina.componenti_scadenza }} Scad.
-                  </span>
-                {% endif %}
-                {% if cabina.componenti_scaduti > 0 %}
-                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                    {{ cabina.componenti_scaduti }} Scad.
-                  </span>
-                {% endif %}
-              </div>
-            </td>
+            
+            
           </tr>
           {% empty %}
           <tr>

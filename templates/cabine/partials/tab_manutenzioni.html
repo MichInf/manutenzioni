@@ -55,9 +55,9 @@
     {% endif %}
   </div>
 
-  {% if cabina.manutenzioni.all %}
+  {% if manutenzioni %}
   <div class="space-y-4">
-    {% for manutenzione in cabina.manutenzioni.all|slice:":5" %}
+    {% for manutenzione in manutenzioni %}
     <div class="rounded-xl p-4 shadow-sm border
       {% if manutenzione.stato_scadenza == 'scaduta' %}border-red-300 bg-red-50
       {% elif manutenzione.stato_scadenza == 'urgente' %}border-orange-300 bg-orange-50
@@ -134,15 +134,6 @@
               </button>
             </form>
             {% endif %}
-          {% endif %}
-
-          {% if manutenzione.stato == 'completata' %}
-          <a href="{% url 'report_compila' manutenzione.pk %}"
-             class="bg-blue-500 hover:bg-blue-600 text-white text-center py-2 px-3 rounded text-xs w-full md:w-auto block">
-            {% if manutenzione.report.stato == 'bozza' %}✍️ Continua Report
-            {% elif manutenzione.report.stato == 'inviato' %}⬇️ Scarica Report
-            {% else %}✍️ Compila Report{% endif %}
-          </a>
           {% endif %}
 
           {% if manutenzione.stato == 'completata' %}

@@ -72,7 +72,7 @@ class Cabina(models.Model):
     chiave = models.CharField(max_length=50, blank=True, verbose_name="N° Chiave")
     pod = models.CharField(max_length=50, blank=True, verbose_name="POD")
     telefono_guardiania = models.CharField(max_length=20, blank=True, verbose_name="Tel. Guardiania")
-    
+    societa_proprietaria = models.CharField(max_length=100, blank=True, verbose_name="Società proprietaria")
     # Coordinate (opzionali)
     latitudine = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True, verbose_name="Latitudine")
     longitudine = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True, verbose_name="Longitudine")
@@ -208,14 +208,15 @@ class ManutenzioneProgrammata(models.Model):
     TIPO_CHOICES = [
         ('semestrale', 'Ordinaria Semestrale'),
         ('annuale', 'Ordinaria Annuale'),
-        ('straordinaria', 'Straordinaria'),
+        ('mensile', 'Mensile Lite'),
+        ('spot', 'Spot / Extra'),
     ]
     
     STATO_CHOICES = [
         ('programmata', 'Programmata'),
-        ('in_corso', 'In Corso'),
         ('completata', 'Completata'),
-        ('annullata', 'Annullata'),
+        ('inviata', 'Inviata'),
+        ('fatturata', 'Fatturata')
     ]
 
     cabina = models.ForeignKey(Cabina, on_delete=models.CASCADE, related_name='manutenzioni')

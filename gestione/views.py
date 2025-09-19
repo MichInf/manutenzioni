@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.utils import timezone
-from django.db import IntegrityError, transaction, models
+from django.db import IntegrityError, transaction
+from django.db.models import Case, When, Value, IntegerField,Q
 from .models import Cabina, Componente, TipoComponente, Cliente, ManutenzioneProgrammata, CabinaServizio, Servizio ,ReportTemplate, ReportCompilato, ReportAttachment
 from .forms import (CabinaForm, ComponenteForm, TipoComponenteForm, ClienteForm, ManutenzioneProgrammataForm, ManutenzioneCompletataForm, ModificaManutenzioneProgrammataForm, CabinaServizioFormSet, build_report_form)
 from django.http import JsonResponse, HttpResponse
@@ -79,51 +80,95 @@ def dashboard(request):
 
 @login_required
 def lista_cabine(request):
-    cabine = Cabina.objects.filter(attiva=True).order_by('matricola')
-    
-    # Aggiungi stato manutenzione per ogni cabina
+    sort = request.GET.get('sort', 'matricola')
+    direction = request.GET.get('direction', 'asc')
+    search = request.GET.get('q', '')  # <- nuova barra ricerca
+
+    qs = Cabina.objects.filter(attiva=True)
+
+    # 🔍 Filtra se presente testo di ricerca
+    if search:
+        qs = qs.filter(
+            Q(matricola__icontains=search) |
+            Q(nome__icontains=search)
+        )
+
+    # Ordinamento DB solo per matricola o nome
+    if sort in {'matricola', 'nome'}:
+        order_by = sort if direction == 'asc' else f'-{sort}'
+        qs = qs.order_by(order_by)
+    else:
+        qs = qs.order_by('matricola')
+
+    # Materializza e calcola attributi derivati
+    cabine = list(qs)
     for cabina in cabine:
         cabina.stato_ordinaria = cabina.stato_manutenzione_ordinaria()
         cabina.giorni_ordinaria = cabina.giorni_alla_manutenzione_ordinaria()
-        
-        # Conta componenti per stato
-        cabina.componenti_ok = 0
-        cabina.componenti_scadenza = 0
-        cabina.componenti_scaduti = 0
-        
-        for componente in cabina.componenti.filter(attivo=True):
-            stato = componente.stato_manutenzione()
-            if stato == 'ok':
-                cabina.componenti_ok += 1
-            elif stato == 'in_scadenza':
-                cabina.componenti_scadenza += 1
-            elif stato == 'scaduta':
-                cabina.componenti_scaduti += 1
-    
-    return render(request, 'cabine/lista.html', {'cabine': cabine})
+        cabina.componenti_ok = cabina.componenti_scadenza = cabina.componenti_scaduti = 0
+        for comp in cabina.componenti.filter(attivo=True):
+            stato = comp.stato_manutenzione()
+            if stato == 'ok': cabina.componenti_ok += 1
+            elif stato == 'in_scadenza': cabina.componenti_scadenza += 1
+            elif stato == 'scaduta': cabina.componenti_scaduti += 1
+
+    if sort == 'stato_ordinaria':
+        order = {'ok': 1, 'in_scadenza': 2, 'scaduta': 3}
+        cabine.sort(
+            key=lambda c: order.get(c.stato_ordinaria, 99),
+            reverse=(direction == 'desc')
+        )
+
+    headers = [
+        ('matricola', 'Matricola'),
+        ('nome', 'Nome'),
+        ('stato_ordinaria', 'Manutenzione Ordinaria'),
+    ]
+
+    return render(request, 'cabine/lista.html', {
+        'cabine': cabine,
+        'sort': sort,
+        'direction': direction,
+        'headers': headers,
+        'search': search,  # <- passo anche nel context
+    })
+
+
+from django.db.models import BooleanField, Case, When, Value
 
 @login_required
 def dettaglio_cabina(request, matricola):
     cabina = get_object_or_404(Cabina, matricola=matricola, attiva=True)
     componenti = cabina.componenti.filter(attivo=True)
-    today= timezone.localdate()
-    # Aggiungi stato per ogni componente
+    today = timezone.localdate()
+
     for componente in componenti:
         componente.stato = componente.stato_manutenzione()
         componente.giorni = componente.giorni_alla_manutenzione()
         componente.prossima = componente.prossima_manutenzione()
 
+    manutenzioni = (
+        cabina.manutenzioni
+        .annotate(
+            is_aperta=Case(
+                When(stato__in=['programmata', 'in_corso'], then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            )
+        )
+        .order_by('-is_aperta', '-data_completamento')  # aperte sopra, poi completate per data
+    )
+
     context = {
         'cabina': cabina,
         'componenti': componenti,
+        'manutenzioni': manutenzioni,
         'stato_ordinaria': cabina.stato_manutenzione_ordinaria(),
         'giorni_ordinaria': cabina.giorni_alla_manutenzione_ordinaria(),
         'prossima_ordinaria': cabina.prossima_manutenzione_ordinaria(),
-        'today':today
+        'today': today
     }
-    
     return render(request, 'cabine/dettaglio.html', context)
-
 
 @login_required
 def lista_alert(request):
@@ -572,7 +617,7 @@ def rinnova_servizio(request, servizio_id):
     cs.save()
     messages.success(request, f"Nuova scadenza impostata al {cs.scadenza:%d/%m/%Y}.")
     return redirect("dettaglio_cabina", matricola=cs.cabina.matricola)
-#FUNZIONI REPORT
+
 
 # Helpers di permesso (adatta ai tuoi metodi/ruoli)
 def _can_fill_reports(user):

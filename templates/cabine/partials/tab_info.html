@@ -56,6 +56,8 @@
 
     <!-- Colonna sinistra: info tecniche -->
     <div class="space-y-2">
+      {% if cabina.fonte %}<div><span class="font-semibold">Fonte:</span> {{ cabina.fonte }}</div>{% endif %}
+      {% if cabina.societa_proprietaria %}<div><span class="font-semibold">Società proprietaria:</span> {{ cabina.societa_proprietaria }}</div>{% endif %}
       {% if cabina.guardiania %}<div><span class="font-semibold">Guardiania:</span> {{ cabina.guardiania }}</div>{% endif %}
       {% if cabina.telefono_guardiania %}<div><span class="font-semibold">Tel. Guardiania:</span> {{ cabina.telefono_guardiania }}</div>{% endif %}
       {% if cabina.chiave %}<div><span class="font-semibold">Chiave:</span> {{ cabina.chiave }}</div>{% endif %}

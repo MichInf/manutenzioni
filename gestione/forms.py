@@ -80,7 +80,7 @@ class CabinaForm(forms.ModelForm):
     )
     class Meta:
         model = Cabina
-        fields = ['nome', 'matricola', 'cliente', 'fonte', 'guardiania', 'chiave', 'pod', 'telefono_guardiania', 'latitudine', 'longitudine', 'attiva', 'note', 'template_report']
+        fields = ['nome', 'matricola', 'cliente', 'fonte', 'societa_proprietaria', 'guardiania', 'chiave', 'pod', 'telefono_guardiania', 'latitudine', 'longitudine', 'attiva', 'note', 'template_report']
         widgets = {
             'nome': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900 placeholder-gray-500',
@@ -93,7 +93,10 @@ class CabinaForm(forms.ModelForm):
             'cliente': forms.Select(attrs={
                 'class': 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900'
             }),
-            
+            'societa_proprietaria': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900 placeholder-gray-500',
+                'placeholder': 'Società proprietaria'
+            }),
             'guardiania': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900 placeholder-gray-500',
                 'placeholder': 'Nome della guardiania'
