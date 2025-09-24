@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Posticipa Alert</h2>
+<p>Stai posticipando: {{ alert }}</p>
+
+<form method="post">
+  {% csrf_token %}
+  <label for="nuova_scadenza">Nuova data:</label>
+  <input type="date" name="nuova_scadenza" required>
+  <button type="submit">Salva</button>
+</form>
+{% endblock %}

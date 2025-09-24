@@ -12,6 +12,7 @@ from .models import (
     ReportCompilato,
     ReportAttachment,
     PianoManutenzione,
+    Alert
 )
 from django import forms
 
@@ -185,3 +186,12 @@ class ReportAttachmentAdmin(admin.ModelAdmin):
     list_display = ("id", "report", "field_name", "uploaded_by", "uploaded_at")
     search_fields = ("field_name", "report__cabina__matricola")
     list_filter = ("uploaded_at",)
+
+
+@admin.register(Alert)
+class AlertAdmin(admin.ModelAdmin):
+    list_display = ("tipo", "cabina", "componente", "priorita", "scadenza", "silenziato", "posticipato_a")
+    list_filter = ("priorita", "silenziato")
+    search_fields = ("tipo", "cabina__descrizione", "componente__nome")
+    ordering = ("scadenza",)
+

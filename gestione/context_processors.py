@@ -1,28 +1,17 @@
-from .models import Cabina, Componente
+from .models import Alert
 
 def alert_count(request):
-    """Context processor per contare gli alert attivi"""
+    """Context processor per contare gli alert attivi (non silenziati)"""
     if not request.user.is_authenticated:
-        return {'alert_count': 0}
-    
-    # Conta alert cabine
-    alert_cabine = 0
-    for cabina in Cabina.objects.filter(attiva=True):
-        stato = cabina.stato_manutenzione_ordinaria()
-        if stato in ['scaduta', 'in_scadenza']:
-            alert_cabine += 1
-    
-    # Conta alert componenti
-    alert_componenti = 0
-    for componente in Componente.objects.filter(attivo=True):
-        stato = componente.stato_manutenzione()
-        if stato in ['scaduta', 'in_scadenza']:
-            alert_componenti += 1
-    
-    total_alert = alert_cabine + alert_componenti
-    
+        return {"alert_count": 0}
+
+    # Conta solo gli alert non silenziati
+    total_alert = Alert.objects.filter(silenziato=False).count()
+    critici = Alert.objects.filter(silenziato=False, priorita="critica").count()
+    componenti = Alert.objects.filter(silenziato=False, tipo="Manutenzione Componente").count()
+
     return {
-        'alert_count': total_alert,
-        'alert_critici': alert_cabine,
-        'alert_componenti': alert_componenti,
+        "alert_count": total_alert,
+        "alert_critici": critici,
+        "alert_componenti": componenti,
     }

@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db import IntegrityError, transaction
 from django.db.models import Case, When, Value, IntegerField,Q
-from .models import Cabina, Componente, TipoComponente, Cliente, ManutenzioneProgrammata, CabinaServizio, Servizio ,ReportTemplate, ReportCompilato, ReportAttachment
+from .models import Cabina, Componente, TipoComponente, Cliente, ManutenzioneProgrammata, CabinaServizio, Servizio ,ReportTemplate, ReportCompilato, ReportAttachment, Alert
 from .forms import (CabinaForm, ComponenteForm, TipoComponenteForm, ClienteForm, ManutenzioneProgrammataForm, ManutenzioneCompletataForm, ModificaManutenzioneProgrammataForm, CabinaServizioFormSet, build_report_form)
 from django.http import JsonResponse, HttpResponse
 from datetime import datetime, timedelta
@@ -189,45 +189,55 @@ def dettaglio_cabina(request, matricola):
 
 @login_required
 def lista_alert(request):
-    # Genera alert dinamici per cabine
-    alert_cabine = []
-    for cabina in Cabina.objects.filter(attiva=True):
-        stato = cabina.stato_manutenzione_ordinaria()
-        giorni = cabina.giorni_alla_manutenzione_ordinaria()
-        
-        if stato in ['scaduta', 'in_scadenza']:
-            priorita = 'critica' if stato == 'scaduta' else 'alta'
-            alert_cabine.append({
-                'tipo': 'Manutenzione Ordinaria',
-                'cabina': cabina,
-                'componente': None,
-                'priorita': priorita,
-                'giorni': giorni,
-                'scadenza': cabina.prossima_manutenzione_ordinaria(),
-            })
-    
-    # Genera alert dinamici per componenti
-    alert_componenti = []
-    for componente in Componente.objects.filter(attivo=True):
-        stato = componente.stato_manutenzione()
-        giorni = componente.giorni_alla_manutenzione()
-        
-        if stato in ['scaduta', 'in_scadenza']:
-            priorita = 'critica' if stato == 'scaduta' else 'alta'
-            alert_componenti.append({
-                'tipo': 'Manutenzione Componente',
-                'cabina': componente.cabina,
-                'componente': componente,
-                'priorita': priorita,
-                'giorni': giorni,
-                'scadenza': componente.prossima_manutenzione(),
-            })
-    
-    # Combina e ordina gli alert
-    tutti_alert = alert_cabine + alert_componenti
-    tutti_alert.sort(key=lambda x: (x['priorita'] != 'critica', x['giorni'] if x['giorni'] else -999))
-    
-    return render(request, 'alert/lista.html', {'alert': tutti_alert})
+    # Query sul modello Alert
+    alert_qs = Alert.objects.filter(silenziato=False)
+
+    # Se l'alert è stato posticipato, usa quella data al posto della scadenza
+    today = timezone.localdate()
+    alert_qs = alert_qs.annotate(
+        giorni=Case(
+            When(posticipato_a__isnull=False,
+                 then=F('posticipato_a') - Value(today)),
+            default=F('scadenza') - Value(today),
+            output_field=IntegerField()
+        )
+    )
+
+    # Ordina: prima i critici, poi per scadenza crescente
+    alert_qs = alert_qs.order_by(
+        Case(
+            When(priorita="critica", then=0),
+            When(priorita="alta", then=1),
+            default=2,
+            output_field=IntegerField()
+        ),
+        'scadenza'
+    )
+
+    return render(request, 'alert/lista.html', {'alert': alert_qs})
+
+@login_required
+def silenzia_alert(request, pk):
+    alert = get_object_or_404(Alert, pk=pk)
+    alert.silenziato = True
+    alert.save()
+    messages.success(request, "Alert silenziato con successo 🔕")
+    return redirect("lista_alert")
+
+
+@login_required
+def posticipa_alert(request, pk):
+    alert = get_object_or_404(Alert, pk=pk)
+    if request.method == "POST":
+        nuova_data = request.POST.get("nuova_scadenza")
+        if nuova_data:
+            alert.posticipato_a = nuova_data
+            alert.save()
+            messages.success(request, f"Alert posticipato al {nuova_data} ⏰")
+            return redirect("lista_alert")
+    return render(request, "alert/posticipa_form.html", {"alert": alert})
+
+
 
 def _parse_servizi_from_post(request):
     """

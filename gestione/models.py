@@ -349,5 +349,36 @@ class ReportAttachment(models.Model):
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    
     def __str__(self):
         return f"{self.field_name} ({self.file.name})"
+
+class Alert(models.Model):
+    PRIORITA_CHOICES = [
+        ('critica', 'Critica'),
+        ('alta', 'Alta'),
+        ('normale', 'Normale'),
+    ]
+
+    tipo = models.CharField(max_length=50)  # es. "Manutenzione Ordinaria"
+    cabina = models.ForeignKey("Cabina", on_delete=models.CASCADE)
+    componente = models.ForeignKey("Componente", on_delete=models.SET_NULL, null=True, blank=True)
+
+    priorita = models.CharField(max_length=10, choices=PRIORITA_CHOICES, default="normale")
+    scadenza = models.DateField()
+
+    silenziato = models.BooleanField(default=False)
+    posticipato_a = models.DateField(null=True, blank=True)
+
+    creato_il = models.DateTimeField(auto_now_add=True)
+    aggiornato_il = models.DateTimeField(auto_now=True)
+
+    @property
+    def giorni_restanti(self):
+       
+        data_riferimento = self.posticipato_a or self.scadenza
+        return (data_riferimento - timezone.localdate()).days
+
+    def __str__(self):
+        return f"{self.tipo} - {self.cabina} ({self.priorita})"
+

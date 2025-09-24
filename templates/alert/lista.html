@@ -6,270 +6,122 @@
 <div class="container mx-auto p-8">
     <!-- Header -->
     <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-4xl font-bold text-gray-800 mb-2">🚨 Alert Manutenzioni</h1>
-                <p class="text-gray-600">Monitoraggio scadenze e manutenzioni in corso</p>
-            </div>
-            
-        </div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">🚨 Alert Manutenzioni</h1>
+        <p class="text-gray-600">Monitoraggio scadenze e manutenzioni in corso</p>
     </div>
-
-    <!-- Statistiche Alert -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <!-- Alert Critici -->
-        <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Alert Critici</dt>
-                        <dd class="text-lg font-medium text-gray-900">
-                            {{ alert|length|add:0 }}
-                            {% with critici=alert|length %}
-                                {% for a in alert %}
-                                    {% if a.priorita == 'critica' and forloop.first %}
-                                        {% with critici=forloop.parentloop.counter0 %}{% endwith %}
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alert Alta Priorità -->
-        <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-yellow-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Alta Priorità</dt>
-                        <dd class="text-lg font-medium text-gray-900">
-                            {% with alta=0 %}
-                                {% for a in alert %}
-                                    {% if a.priorita == 'alta' %}
-                                        {% with alta=alta|add:1 %}{% endwith %}
-                                    {% endif %}
-                                {% endfor %}
-                                {{ alta }}
-                            {% endwith %}
-                        </dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Totale Alert -->
-        <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Totale Alert</dt>
-                        <dd class="text-lg font-medium text-gray-900">{{ alert|length }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cabine Monitorate -->
-        <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Cabine Attive</dt>
-                        <dd class="text-lg font-medium text-gray-900">
-                            {% load custom_filters %}
-                            {{ alert|get_unique_cabine|length }}
-                        </dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-    </div>    
 
     <!-- Lista Alert -->
     <div class="bg-white shadow-lg rounded-lg overflow-hidden">
         {% if alert %}
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Priorità
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tipo Alert
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Cabina
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Componente
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Scadenza
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Giorni
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Azioni
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for a in alert %}
-                        <tr class="hover:bg-gray-50 
-                            {% if a.priorita == 'critica' %}bg-red-50 border-l-4 border-red-500
-                            {% elif a.priorita == 'alta' %}bg-yellow-50 border-l-4 border-yellow-500
-                            {% endif %}">
-                            
-                            <!-- Priorità -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {% if a.priorita == 'critica' %}bg-red-100 text-red-800
-                                    {% elif a.priorita == 'alta' %}bg-yellow-100 text-yellow-800
-                                    {% else %}bg-green-100 text-green-800{% endif %}">
-                                    {% if a.priorita == 'critica' %}🚨 CRITICO
-                                    {% elif a.priorita == 'alta' %}⚠️ ALTA
-                                    {% else %}ℹ️ NORMALE{% endif %}
-                                </span>
-                            </td>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priorità</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cabina</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Componente</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scadenza</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giorni</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for a in alert %}
+                    <tr class="hover:bg-gray-50 
+                        {% if a.priorita == 'critica' %}bg-red-50 border-l-4 border-red-500
+                        {% elif a.priorita == 'alta' %}bg-yellow-50 border-l-4 border-yellow-500
+                        {% endif %}">
+                        
+                        <!-- Priorità -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if a.priorita == 'critica' %}bg-red-100 text-red-800
+                                {% elif a.priorita == 'alta' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {% if a.priorita == 'critica' %}🚨 CRITICO
+                                {% elif a.priorita == 'alta' %}⚠️ ALTA
+                                {% else %}ℹ️ NORMALE{% endif %}
+                            </span>
+                        </td>
 
-                            <!-- Tipo Alert -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ a.tipo }}</div>
-                            </td>
+                        <!-- Tipo -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ a.tipo }}</div>
+                        </td>
 
-                            <!-- Cabina -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <span class="text-sm font-medium text-blue-800">
-                                                {{ a.cabina.matricola|slice:":3" }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ a.cabina.matricola }}</div>
-                                        <div class="text-sm text-gray-500">{{ a.cabina.descrizione|truncatechars:30 }}</div>
-                                    </div>
-                                </div>
-                            </td>
+                        <!-- Cabina -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {{ a.cabina.matricola }} – {{ a.cabina.descrizione }}
+                        </td>
 
-                            <!-- Componente -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {% if a.componente %}
-                                    <div class="flex items-center">
-                                        <div class="w-3 h-3 rounded-full mr-2" 
-                                             style="background-color: {{ a.componente.tipo_componente.colore }};"></div>
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ a.componente.tipo_componente.nome }}
-                                            </div>
-                                            {% if a.componente.codice %}
-                                                <div class="text-sm text-gray-500">{{ a.componente.codice }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
+                        <!-- Componente -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if a.componente %}
+                                {{ a.componente.tipo_componente.nome }}
+                                {% if a.componente.codice %} ({{ a.componente.codice }}){% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <!-- Scadenza -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if a.posticipato_a %}
+                                <div class="text-sm font-medium text-gray-900">Posticipato: {{ a.posticipato_a|date:"d/m/Y" }}</div>
+                                <div class="text-sm text-gray-500">(Originale: {{ a.scadenza|date:"d/m/Y" }})</div>
+                            {% else %}
+                                <div class="text-sm font-medium text-gray-900">{{ a.scadenza|date:"d/m/Y" }}</div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Giorni -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium
+                                {% if a.giorni_restanti < 0 %}text-red-600
+                                {% elif a.giorni_restanti < 30 %}text-yellow-600
+                                {% else %}text-green-600{% endif %}">
+                                {% if a.giorni_restanti < 0 %}
+                                    {{ a.giorni_restanti|abs }} giorni fa
+                                {% elif a.giorni_restanti == 0 %}
+                                    OGGI
                                 {% else %}
-                                    <span class="text-sm text-gray-500">-</span>
+                                    {{ a.giorni_restanti }} giorni
                                 {% endif %}
-                            </td>
+                            </div>
+                        </td>
 
-                            <!-- Scadenza -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ a.scadenza|date:"d/m/Y" }}</div>
-                                <div class="text-sm text-gray-500">{{ a.scadenza|date:"l" }}</div>
-                            </td>
-
-                            <!-- Giorni -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium
-                                    {% if a.giorni < 0 %}text-red-600
-                                    {% elif a.giorni < 30 %}text-yellow-600
-                                    {% else %}text-green-600{% endif %}">
-                                    {% if a.giorni < 0 %}
-                                        {{ a.giorni|add:"0"|floatformat:"0" }} giorni fa
-                                    {% elif a.giorni == 0 %}
-                                        OGGI
+                        <!-- Azioni -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'dettaglio_cabina' a.cabina.matricola %}" class="text-blue-600 hover:text-blue-900" title="Visualizza">👁️</a>
+                                {% if user.is_administrator or user.is_controlroom %}
+                                    {% if a.componente %}
+                                        <a href="{% url 'modifica_componente' a.componente.id %}" class="text-green-600 hover:text-green-900" title="Modifica">✏️</a>
                                     {% else %}
-                                        {{ a.giorni }} giorni
+                                        <a href="{% url 'modifica_cabina' a.cabina.matricola %}" class="text-green-600 hover:text-green-900" title="Modifica">✏️</a>
                                     {% endif %}
-                                </div>
-                            </td>
-
-                            <!-- Azioni -->
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex space-x-2">
-                                    <a href="{% url 'dettaglio_cabina' a.cabina.matricola %}" 
-                                       class="text-blue-600 hover:text-blue-900" title="Visualizza Cabina">
-                                        👁️
-                                    </a>
-                                    {% if user.is_administrator or user.is_controlroom %}
-                                        {% if a.componente %}
-                                            <a href="{% url 'modifica_componente' a.componente.id %}" 
-                                               class="text-green-600 hover:text-green-900" title="Modifica Componente">
-                                                ✏️
-                                            </a>
-                                        {% else %}
-                                            <a href="{% url 'modifica_cabina' a.cabina.matricola %}" 
-                                               class="text-green-600 hover:text-green-900" title="Modifica Cabina">
-                                                ✏️
-                                            </a>
-                                        {% endif %}
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                                {% endif %}
+                                <a href="{% url 'silenzia_alert' a.id %}" class="text-gray-600 hover:text-gray-900" title="Silenzia">🔕</a>
+                                <a href="{% url 'posticipa_alert' a.id %}" class="text-orange-600 hover:text-orange-900" title="Posticipa">⏰</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-            <!-- Nessun Alert -->
-            <div class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">🎉 Nessun Alert Attivo!</h3>
-                <p class="mt-1 text-sm text-gray-500">Tutte le manutenzioni sono in regola. Ottimo lavoro!</p>
-                <div class="mt-6">
-                    <a href="{% url 'lista_cabine' %}" 
-                       class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                        Visualizza Cabine
-                    </a>
-                </div>
+        <!-- Nessun Alert -->
+        <div class="text-center py-12">
+            <h3 class="mt-2 text-sm font-medium text-gray-900">🎉 Nessun Alert Attivo!</h3>
+            <p class="mt-1 text-sm text-gray-500">Tutte le manutenzioni sono in regola. Ottimo lavoro!</p>
+            <div class="mt-6">
+                <a href="{% url 'lista_cabine' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    Visualizza Cabine
+                </a>
             </div>
+        </div>
         {% endif %}
     </div>
 </div>
