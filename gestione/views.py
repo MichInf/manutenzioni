@@ -14,6 +14,23 @@ from django.urls import reverse
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.core.files.storage import default_storage
+from dateutil.relativedelta import relativedelta
+from django.http import JsonResponse
+from .models import ManutenzioneProgrammata
+
+@login_required
+def calendario_manutenzioni(request):
+    manutenzioni = ManutenzioneProgrammata.objects.filter(stato='programmata')
+    events = []
+
+    for m in manutenzioni:
+        events.append({
+            "title": f"{m.get_tipo_display()} - {m.cabina.matricola}",
+            "start": m.data_programmata.strftime("%Y-%m-%d"),
+            "url": reverse('dettaglio_cabina', kwargs={'matricola': m.cabina.matricola}) + '#tab-manutenzioni'
+        })
+
+    return JsonResponse(events, safe=False)
 
 @csrf_exempt
 @login_required
@@ -495,7 +512,6 @@ def programma_manutenzione(request, matricola):
 
 @login_required
 def completa_manutenzione(request, pk):
-    
     if request.method != "POST":
         messages.error(request, "Richiesta non valida.")
         return redirect('dashboard')
@@ -505,7 +521,6 @@ def completa_manutenzione(request, pk):
 
     if manut.stato == "completata":
         messages.info(request, "Questa manutenzione risulta già completata.")
-        
         return redirect(f"{url}#tab-manutenzioni")
 
     # data completamento
@@ -525,27 +540,54 @@ def completa_manutenzione(request, pk):
     manut.operatore = request.user
     manut.save()
 
-    # calcolo prossima manutenzione
-    if manut.tipo == "semestrale":
-        next_tipo = "annuale"
-    else:
-        next_tipo = "semestrale"
-    
-    data_next = data_compl + timedelta(days=182)
+    # ======= NUOVA LOGICA =======
+    piano = getattr(manut.cabina, "piano_manutenzione", None)
 
-    # crea nuova manutenzione programmata
-    ManutenzioneProgrammata.objects.create(
-        cabina=manut.cabina,
-        creata_da=request.user,
-        tipo=next_tipo,
-        data_programmata=data_next,
-        note=""
-    )
+    if piano:
+        if piano.tipo == "semestrale_annuale":
+            # alterna
+            next_tipo = "annuale" if manut.tipo == "semestrale" else "semestrale"
+            giorni = 182 
+            ManutenzioneProgrammata.objects.create(
+                cabina=manut.cabina,
+                creata_da=request.user,
+                tipo=next_tipo,
+                data_programmata=data_compl + timedelta(days=giorni),
+            )
+
+        elif piano.tipo == "annuale_only":
+            # sempre annuale
+            ManutenzioneProgrammata.objects.create(
+                cabina=manut.cabina,
+                creata_da=request.user,
+                tipo="annuale",
+                data_programmata=data_compl + timedelta(days=365),
+            )
+
+        elif piano.tipo == "mensile_lite_annuale":
+            if manut.tipo == "annuale":
+                # dopo un’annuale: 11 mensili + 1 annuale
+                for i in range(1, 12):
+                    ManutenzioneProgrammata.objects.create(
+                        cabina=manut.cabina,
+                        creata_da=request.user,
+                        tipo="mensile",
+                        data_programmata=data_compl + relativedelta(months=i),
+                    )
+                ManutenzioneProgrammata.objects.create(
+                    cabina=manut.cabina,
+                    creata_da=request.user,
+                    tipo="annuale",
+                    data_programmata=data_compl + relativedelta(years=1),
+                )
+            # se sto completando un mensile, non genero nulla
+
+        elif piano.tipo == "spot":
+            # nessuna nuova manutenzione
+            pass
 
     messages.success(request, "Manutenzione segnata come completata.")
-    messages.success(request, "Prossima manutenzione creata.")
     return redirect(f"{url}#tab-manutenzioni")
-
 
 @login_required
 def registra_manutenzione_completata(request, matricola):
@@ -799,7 +841,25 @@ def report_download(request, pk):
     resp["Content-Disposition"] = f'attachment; filename="{filename}"'
     return resp
 
-    
+
+@login_required
+def calendario_manutenzioni(request):
+    manutenzioni = ManutenzioneProgrammata.objects.filter(stato='programmata')
+    events = []
+
+    for m in manutenzioni:
+        events.append({
+            
+            "title": f"{m.cabina.cliente.nome_azienda} - {m.cabina.nome}",
+            "start": m.data_programmata.strftime("%Y-%m-%d"),
+            "url": reverse('dettaglio_cabina', kwargs={'matricola': m.cabina.matricola}) + '#tab-manutenzioni',
+            "extendedProps": {"tipo": m.tipo}
+        })
+
+    return JsonResponse(events, safe=False)
+
+
+
 def logout_view(request):
     logout(request)
     return redirect('login')

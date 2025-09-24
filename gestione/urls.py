@@ -2,6 +2,9 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import calendario_manutenzioni
+from django.views.generic import TemplateView
+
 
 
 urlpatterns = [
@@ -26,6 +29,9 @@ urlpatterns = [
     path("manutenzioni/<int:pk>/report/download/", views.report_download, name="report_download"),
     path('ajax/crea-servizio/', views.crea_servizio_ajax, name='crea_servizio_ajax'),
     path('servizio/<int:servizio_id>/rinnova/', views.rinnova_servizio, name='rinnova_servizio'),
+    path('calendario/manutenzioni/', calendario_manutenzioni, name='calendario_manutenzioni'),
+    path('calendario/', TemplateView.as_view(template_name="manutenzioni/calendario.html"), name='calendario'),
+
     path('logout/', views.logout_view, name='logout'),
 ]
 
