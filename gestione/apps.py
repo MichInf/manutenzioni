@@ -6,3 +6,4 @@ class GestioneConfig(AppConfig):
 
     def ready(self):
         import gestione.signals
+        

@@ -3,15 +3,16 @@
 {% block title %}Alert Manutenzioni{% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-8">
+<div class="max-w-xl md:max-w-5xl mx-auto px-4 pt-4 pb-24 md:pb-8">
+
     <!-- Header -->
-    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">🚨 Alert Manutenzioni</h1>
-        <p class="text-gray-600">Monitoraggio scadenze e manutenzioni in corso</p>
-    </div>
+    <section class="bg-white shadow rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">🚨 Alert Manutenzioni</h1>
+        <p class="text-gray-600 text-base md:text-lg">Monitoraggio scadenze e manutenzioni in corso</p>
+    </section>
 
     <!-- Lista Alert -->
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+    <section class="bg-white shadow rounded-2xl overflow-hidden">
         {% if alert %}
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -32,7 +33,7 @@
                         {% if a.priorita == 'critica' %}bg-red-50 border-l-4 border-red-500
                         {% elif a.priorita == 'alta' %}bg-yellow-50 border-l-4 border-yellow-500
                         {% endif %}">
-                        
+
                         <!-- Priorità -->
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -46,17 +47,15 @@
                         </td>
 
                         <!-- Tipo -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ a.tipo }}</div>
-                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ a.tipo }}</td>
 
                         <!-- Cabina -->
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             {{ a.cabina.matricola }} – {{ a.cabina.descrizione }}
                         </td>
 
                         <!-- Componente -->
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             {% if a.componente %}
                                 {{ a.componente.tipo_componente.nome }}
                                 {% if a.componente.codice %} ({{ a.componente.codice }}){% endif %}
@@ -66,29 +65,27 @@
                         </td>
 
                         <!-- Scadenza -->
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             {% if a.posticipato_a %}
-                                <div class="text-sm font-medium text-gray-900">Posticipato: {{ a.posticipato_a|date:"d/m/Y" }}</div>
-                                <div class="text-sm text-gray-500">(Originale: {{ a.scadenza|date:"d/m/Y" }})</div>
+                                <div class="font-medium text-gray-900">Posticipato: {{ a.posticipato_a|date:"d/m/Y" }}</div>
+                                <div class="text-gray-500">(Originale: {{ a.scadenza|date:"d/m/Y" }})</div>
                             {% else %}
-                                <div class="text-sm font-medium text-gray-900">{{ a.scadenza|date:"d/m/Y" }}</div>
+                                <div class="font-medium text-gray-900">{{ a.scadenza|date:"d/m/Y" }}</div>
                             {% endif %}
                         </td>
 
                         <!-- Giorni -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium
-                                {% if a.giorni_restanti < 0 %}text-red-600
-                                {% elif a.giorni_restanti < 30 %}text-yellow-600
-                                {% else %}text-green-600{% endif %}">
-                                {% if a.giorni_restanti < 0 %}
-                                    {{ a.giorni_restanti|abs }} giorni fa
-                                {% elif a.giorni_restanti == 0 %}
-                                    OGGI
-                                {% else %}
-                                    {{ a.giorni_restanti }} giorni
-                                {% endif %}
-                            </div>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium
+                            {% if a.giorni_restanti < 0 %}text-red-600
+                            {% elif a.giorni_restanti < 30 %}text-yellow-600
+                            {% else %}text-green-600{% endif %}">
+                            {% if a.giorni_restanti < 0 %}
+                                {{ a.giorni_restanti|add:"0"|floatformat:0|cut:"-" }} giorni fa
+                            {% elif a.giorni_restanti == 0 %}
+                                OGGI
+                            {% else %}
+                                {{ a.giorni_restanti }} giorni
+                            {% endif %}
                         </td>
 
                         <!-- Azioni -->
@@ -123,6 +120,6 @@
             </div>
         </div>
         {% endif %}
-    </div>
+    </section>
 </div>
 {% endblock %}

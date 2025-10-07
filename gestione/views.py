@@ -189,32 +189,23 @@ def dettaglio_cabina(request, matricola):
 
 @login_required
 def lista_alert(request):
-    # Query sul modello Alert
-    alert_qs = Alert.objects.filter(silenziato=False)
-
-    # Se l'alert è stato posticipato, usa quella data al posto della scadenza
-    today = timezone.localdate()
-    alert_qs = alert_qs.annotate(
-        giorni=Case(
-            When(posticipato_a__isnull=False,
-                 then=F('posticipato_a') - Value(today)),
-            default=F('scadenza') - Value(today),
-            output_field=IntegerField()
+    # Recupera solo alert non silenziati
+    alert_qs = (
+        Alert.objects
+        .filter(silenziato=False)
+        .order_by(
+            Case(
+                When(priorita="critica", then=0),
+                When(priorita="alta", then=1),
+                default=2,
+                output_field=IntegerField(),
+            ),
+            "scadenza",
         )
     )
 
-    # Ordina: prima i critici, poi per scadenza crescente
-    alert_qs = alert_qs.order_by(
-        Case(
-            When(priorita="critica", then=0),
-            When(priorita="alta", then=1),
-            default=2,
-            output_field=IntegerField()
-        ),
-        'scadenza'
-    )
-
-    return render(request, 'alert/lista.html', {'alert': alert_qs})
+    # Passa al template
+    return render(request, "alert/lista.html", {"alert": alert_qs})
 
 @login_required
 def silenzia_alert(request, pk):
