@@ -182,30 +182,27 @@ def dettaglio_cabina(request, matricola):
         'manutenzioni': manutenzioni,
         'stato_ordinaria': cabina.stato_manutenzione_ordinaria(),
         'giorni_ordinaria': cabina.giorni_alla_manutenzione_ordinaria(),
-        'prossima_ordinaria': cabina.prossima_manutenzione_ordinaria(),
+        'prossima_ordinaria': cabina.prossima_manutenzione(),
         'today': today
     }
     return render(request, 'cabine/dettaglio.html', context)
 
 @login_required
 def lista_alert(request):
-    # Recupera solo alert non silenziati
-    alert_qs = (
+    """
+    Mostra tutti gli alert (scaduti, in scadenza, normali, silenziati) e
+    lascia che il filtraggio venga gestito interamente in JavaScript.
+    """
+    alert = (
         Alert.objects
-        .filter(silenziato=False)
-        .order_by(
-            Case(
-                When(priorita="critica", then=0),
-                When(priorita="alta", then=1),
-                default=2,
-                output_field=IntegerField(),
-            ),
-            "scadenza",
-        )
+        .select_related("cabina")  # ottimizza query SQL
+        .order_by("scadenza")      # ordine naturale per data
     )
 
-    # Passa al template
-    return render(request, "alert/lista.html", {"alert": alert_qs})
+    context = {
+        "alert": alert,
+    }
+    return render(request, "alert/lista.html", context)
 
 @login_required
 def silenzia_alert(request, pk):
@@ -213,6 +210,16 @@ def silenzia_alert(request, pk):
     alert.silenziato = True
     alert.save()
     messages.success(request, "Alert silenziato con successo 🔕")
+    return redirect("lista_alert")
+
+@login_required
+def riattiva_alert(request, pk):
+    """
+    Riattiva un alert silenziato (imposta silenziato=False).
+    """
+    alert = get_object_or_404(Alert, pk=pk)
+    alert.silenziato = False
+    alert.save()
     return redirect("lista_alert")
 
 
@@ -225,8 +232,9 @@ def posticipa_alert(request, pk):
             alert.posticipato_a = nuova_data
             alert.save()
             messages.success(request, f"Alert posticipato al {nuova_data} ⏰")
-            return redirect("lista_alert")
-    return render(request, "alert/posticipa_form.html", {"alert": alert})
+            return JsonResponse({"success": True, "nuova_data": nuova_data})
+        return JsonResponse({"success": False, "error": "Data non valida."}, status=400)
+    return JsonResponse({"success": False, "error": "Metodo non consentito."}, status=405)
 
 
 

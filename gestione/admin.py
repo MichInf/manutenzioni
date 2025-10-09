@@ -190,8 +190,7 @@ class ReportAttachmentAdmin(admin.ModelAdmin):
 
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
-    list_display = ("tipo", "cabina", "componente", "priorita", "scadenza", "silenziato", "posticipato_a")
-    list_filter = ("priorita", "silenziato")
+    list_display = ("tipo", "cabina", "componente", "scadenza", "silenziato", "posticipato_a")
     search_fields = ("tipo", "cabina__descrizione", "componente__nome")
-    ordering = ("scadenza",)
+    
 

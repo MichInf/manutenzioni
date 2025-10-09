@@ -19,6 +19,7 @@ urlpatterns = [
     path('alert/', views.lista_alert, name='lista_alert'),
     path("alert/<int:pk>/silenzia/", views.silenzia_alert, name="silenzia_alert"),
     path("alert/<int:pk>/posticipa/", views.posticipa_alert, name="posticipa_alert"),
+    path("alert/<int:pk>/riattiva/", views.riattiva_alert, name="riattiva_alert"),
     path('clienti/', views.lista_clienti, name='lista_clienti'),
     path('clienti/<int:cliente_id>/', views.dettaglio_cliente, name='dettaglio_cliente'),
     path('clienti/crea/', views.crea_cliente, name='crea_cliente'),

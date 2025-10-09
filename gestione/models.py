@@ -102,17 +102,21 @@ class Cabina(models.Model):
         ).order_by('-data_completamento').first()
         return ultima.data_completamento if ultima else None
 
-    def prossima_manutenzione_ordinaria(self):
-        """Restituisce la prossima manutenzione programmata"""
-        prossima = self.manutenzioni.filter(
-            stato='programmata',
-            tipo__in=['semestrale', 'annuale']
-        ).order_by('data_programmata').first()
+    def prossima_manutenzione(self):
+
+        prossima = (
+            self.manutenzioni
+            .filter(stato='programmata')
+            .order_by('data_programmata')
+            .first()
+        )
         return prossima.data_programmata if prossima else None
+
+
 
     def giorni_alla_manutenzione_ordinaria(self):
         """Calcola i giorni alla prossima manutenzione programmata"""
-        prossima = self.prossima_manutenzione_ordinaria()
+        prossima = self.prossima_manutenzione()
         if prossima:
             delta = prossima - timezone.now().date()
             return delta.days
@@ -152,11 +156,6 @@ class PianoManutenzione(models.Model):
         related_name='piano_manutenzione',
     )
     tipo = models.CharField(max_length=50, choices=Tipo.choices)
-    durata_contrattuale_mesi = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        verbose_name="Durata contrattuale (mesi)",
-    )
 
     def __str__(self):
         return f"{self.cabina} - {self.get_tipo_display()}"
@@ -353,20 +352,13 @@ class ReportAttachment(models.Model):
     def __str__(self):
         return f"{self.field_name} ({self.file.name})"
 
-class Alert(models.Model):
-    PRIORITA_CHOICES = [
-        ('critica', 'Critica'),
-        ('alta', 'Alta'),
-        ('normale', 'Normale'),
-    ]
 
+class Alert(models.Model):
     tipo = models.CharField(max_length=50)  # es. "Manutenzione Ordinaria"
     cabina = models.ForeignKey("Cabina", on_delete=models.CASCADE)
     componente = models.ForeignKey("Componente", on_delete=models.SET_NULL, null=True, blank=True)
 
-    priorita = models.CharField(max_length=10, choices=PRIORITA_CHOICES, default="normale")
     scadenza = models.DateField()
-
     silenziato = models.BooleanField(default=False)
     posticipato_a = models.DateField(null=True, blank=True)
 
@@ -375,10 +367,23 @@ class Alert(models.Model):
 
     @property
     def giorni_restanti(self):
-       
+        """Calcola i giorni mancanti alla scadenza effettiva."""
         data_riferimento = self.posticipato_a or self.scadenza
         return (data_riferimento - timezone.localdate()).days
+    
 
+    @property
+    def priorita(self):
+        """Calcola la priorità aggiornata in base ai giorni restanti."""
+        giorni = self.giorni_restanti
+        if giorni < 0:
+            return "scaduto"
+        elif giorni < 30:
+            return "in_scadenza"
+        else:
+            return "normale"
+
+    def data_effettiva(self):
+        return self.posticipato_a or self.scadenza
     def __str__(self):
         return f"{self.tipo} - {self.cabina} ({self.priorita})"
-

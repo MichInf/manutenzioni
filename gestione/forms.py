@@ -70,14 +70,7 @@ class CabinaForm(forms.ModelForm):
         }),
         label='Piano manutenzione',
     )
-    durata_contrattuale_mesi = forms.IntegerField(
-        required=False,
-        widget=forms.NumberInput(attrs={
-            'class': 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900',
-            'min': '1'
-        }),
-        label='Durata contrattuale (mesi)',
-    )
+
     class Meta:
         model = Cabina
         fields = ['nome', 'matricola', 'cliente', 'fonte', 'societa_proprietaria', 'guardiania', 'chiave', 'pod', 'telefono_guardiania', 'latitudine', 'longitudine', 'attiva', 'note', 'template_report']
@@ -140,18 +133,18 @@ class CabinaForm(forms.ModelForm):
         if self.instance.pk and hasattr(self.instance, 'piano_manutenzione'):
             piano = self.instance.piano_manutenzione
             self.fields['piano_manutenzione_tipo'].initial = piano.tipo
-            self.fields['durata_contrattuale_mesi'].initial = piano.durata_contrattuale_mesi
+            
 
     def save(self, commit=True):
         cabina = super().save(commit)
         tipo = self.cleaned_data.get('piano_manutenzione_tipo')
-        durata = self.cleaned_data.get('durata_contrattuale_mesi')
-        if tipo or durata:
+        
+        if tipo :
             PianoManutenzione.objects.update_or_create(
                 cabina=cabina,
                 defaults={
                     'tipo': tipo,
-                    'durata_contrattuale_mesi': durata,
+        
                 },
             )
         return cabina

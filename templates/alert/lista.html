@@ -3,123 +3,305 @@
 {% block title %}Alert Manutenzioni{% endblock %}
 
 {% block content %}
-<div class="max-w-xl md:max-w-5xl mx-auto px-4 pt-4 pb-24 md:pb-8">
+<div class="max-w-5xl mx-auto px-4 pt-6 pb-24">
 
-    <!-- Header -->
-    <section class="bg-white shadow rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">🚨 Alert Manutenzioni</h1>
-        <p class="text-gray-600 text-base md:text-lg">Monitoraggio scadenze e manutenzioni in corso</p>
-    </section>
+  <!-- Header -->
+  <section class="bg-white shadow rounded-2xl p-6 mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">🚨 Alert Manutenzioni</h1>
+    <p class="text-gray-600 text-lg">Controllo scadenze e manutenzioni in corso</p>
+  </section>
 
-    <!-- Lista Alert -->
-    <section class="bg-white shadow rounded-2xl overflow-hidden">
-        {% if alert %}
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priorità</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cabina</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Componente</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scadenza</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giorni</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azioni</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for a in alert %}
-                    <tr class="hover:bg-gray-50 
-                        {% if a.priorita == 'critica' %}bg-red-50 border-l-4 border-red-500
-                        {% elif a.priorita == 'alta' %}bg-yellow-50 border-l-4 border-yellow-500
-                        {% endif %}">
+  <!-- Filtri -->
+<section class="bg-white shadow rounded-2xl p-4 mb-6">
+  <h2 class="text-lg font-semibold text-gray-700 mb-3">Filtri</h2>
+  <div class="flex flex-wrap gap-4 items-center text-sm">
 
-                        <!-- Priorità -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                {% if a.priorita == 'critica' %}bg-red-100 text-red-800
-                                {% elif a.priorita == 'alta' %}bg-yellow-100 text-yellow-800
-                                {% else %}bg-green-100 text-green-800{% endif %}">
-                                {% if a.priorita == 'critica' %}🚨 CRITICO
-                                {% elif a.priorita == 'alta' %}⚠️ ALTA
-                                {% else %}ℹ️ NORMALE{% endif %}
-                            </span>
-                        </td>
+    <label class="flex items-center space-x-2">
+      <input type="checkbox" id="filtro-scaduto" class="filtro" data-priorita="scaduto" checked>
+      <span>Scaduti (<span id="count-scaduto">0</span>)</span>
+    </label>
 
-                        <!-- Tipo -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ a.tipo }}</td>
+    <label class="flex items-center space-x-2">
+      <input type="checkbox" id="filtro-in-scadenza" class="filtro" data-priorita="in_scadenza" checked>
+      <span>In scadenza (<span id="count-in_scadenza">0</span>)</span>
+    </label>
 
-                        <!-- Cabina -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            {{ a.cabina.matricola }} – {{ a.cabina.descrizione }}
-                        </td>
+    <label class="flex items-center space-x-2">
+      <input type="checkbox" id="filtro-normale" class="filtro" data-priorita="normale">
+      <span>Normali (<span id="count-normale">0</span>)</span>
+    </label>
 
-                        <!-- Componente -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            {% if a.componente %}
-                                {{ a.componente.tipo_componente.nome }}
-                                {% if a.componente.codice %} ({{ a.componente.codice }}){% endif %}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
+    <label class="flex items-center space-x-2">
+      <input type="checkbox" id="filtro-silenziato" class="filtro" data-silenziato="true">
+      <span>Silenziati (<span id="count-silenziato">0</span>)</span>
+    </label>
+  </div>
 
-                        <!-- Scadenza -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            {% if a.posticipato_a %}
-                                <div class="font-medium text-gray-900">Posticipato: {{ a.posticipato_a|date:"d/m/Y" }}</div>
-                                <div class="text-gray-500">(Originale: {{ a.scadenza|date:"d/m/Y" }})</div>
-                            {% else %}
-                                <div class="font-medium text-gray-900">{{ a.scadenza|date:"d/m/Y" }}</div>
-                            {% endif %}
-                        </td>
+  <div id="alert-counter" class="text-gray-500 text-sm mt-3"></div>
+</section>
 
-                        <!-- Giorni -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium
-                            {% if a.giorni_restanti < 0 %}text-red-600
-                            {% elif a.giorni_restanti < 30 %}text-yellow-600
-                            {% else %}text-green-600{% endif %}">
-                            {% if a.giorni_restanti < 0 %}
-                                {{ a.giorni_restanti|add:"0"|floatformat:0|cut:"-" }} giorni fa
-                            {% elif a.giorni_restanti == 0 %}
-                                OGGI
-                            {% else %}
-                                {{ a.giorni_restanti }} giorni
-                            {% endif %}
-                        </td>
 
-                        <!-- Azioni -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex space-x-2">
-                                <a href="{% url 'dettaglio_cabina' a.cabina.matricola %}" class="text-blue-600 hover:text-blue-900" title="Visualizza">👁️</a>
-                                {% if user.is_administrator or user.is_controlroom %}
-                                    {% if a.componente %}
-                                        <a href="{% url 'modifica_componente' a.componente.id %}" class="text-green-600 hover:text-green-900" title="Modifica">✏️</a>
-                                    {% else %}
-                                        <a href="{% url 'modifica_cabina' a.cabina.matricola %}" class="text-green-600 hover:text-green-900" title="Modifica">✏️</a>
-                                    {% endif %}
-                                {% endif %}
-                                <a href="{% url 'silenzia_alert' a.id %}" class="text-gray-600 hover:text-gray-900" title="Silenzia">🔕</a>
-                                <a href="{% url 'posticipa_alert' a.id %}" class="text-orange-600 hover:text-orange-900" title="Posticipa">⏰</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <!-- Nessun Alert -->
-        <div class="text-center py-12">
-            <h3 class="mt-2 text-sm font-medium text-gray-900">🎉 Nessun Alert Attivo!</h3>
-            <p class="mt-1 text-sm text-gray-500">Tutte le manutenzioni sono in regola. Ottimo lavoro!</p>
-            <div class="mt-6">
-                <a href="{% url 'lista_cabine' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                    Visualizza Cabine
-                </a>
-            </div>
-        </div>
-        {% endif %}
-    </section>
+  <!-- Tabella alert -->
+  <section class="bg-white shadow rounded-2xl overflow-hidden">
+    {% if alert %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200" id="tabella-alert">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priorità</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cabina</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Scadenza</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giorni</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Azioni</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for a in alert %}
+                <tr class="alert-row
+                    {% if a.giorni_restanti < 0 %}bg-red-50 border-l-4 border-red-500{% elif a.giorni_restanti < 30 %}bg-yellow-50 border-l-4 border-yellow-500{% else %}bg-green-50 border-l-4 border-green-400{% endif %}"
+                    data-priorita="{% if a.giorni_restanti < 0 %}scaduto{% elif a.giorni_restanti < 30 %}in_scadenza{% else %}normale{% endif %}"
+                    data-silenziato="{{ a.silenziato|yesno:'true,false' }}">
+
+                <!-- PRIORITÀ -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                    {% if a.giorni_restanti < 0 %}bg-red-100 text-red-800
+                    {% elif a.giorni_restanti < 30 %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-green-100 text-green-800{% endif %}">
+                    {% if a.giorni_restanti < 0 %}🚨 SCADUTO
+                    {% elif a.giorni_restanti < 30 %}⚠️ IN SCADENZA
+                    {% else %}ℹ️ NORMALE{% endif %}
+                    </span>
+                </td>
+
+                <!-- TIPO -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ a.tipo }}</td>
+
+                <!-- CABINA -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {{ a.cabina.matricola }} – {{ a.cabina.nome }}
+                </td>
+
+                <!-- SCADENZA -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {% if a.posticipato_a %}
+                    <div class="font-medium text-gray-900">Posticipato: {{ a.posticipato_a|date:"d/m/Y" }}</div>
+                    <div class="text-gray-500">(Originale: {{ a.scadenza|date:"d/m/Y" }})</div>
+                    {% else %}
+                    <div class="font-medium text-gray-900">{{ a.scadenza|date:"d/m/Y" }}</div>
+                    {% endif %}
+                </td>
+
+                <!-- GIORNI -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium
+                    {% if a.giorni_restanti < 0 %}text-red-600
+                    {% elif a.giorni_restanti < 30 %}text-yellow-600
+                    {% else %}text-green-600{% endif %}">
+                    {% if a.giorni_restanti < 0 %}
+                    {{ a.giorni_restanti|add:"0"|floatformat:0|cut:"-" }} giorni fa
+                    {% elif a.giorni_restanti == 0 %}
+                    OGGI
+                    {% else %}
+                    {{ a.giorni_restanti }} giorni
+                    {% endif %}
+                </td>
+
+                <!-- AZIONI -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-2">
+                    <a href="{% url 'dettaglio_cabina' a.cabina.matricola %}" class="text-blue-600 hover:text-blue-900" title="Visualizza">👁️</a>
+                    {% if not a.silenziato %}
+                        <a href="{% url 'silenzia_alert' a.pk %}" class="text-gray-600 hover:text-gray-900" title="Silenzia">🔕</a>
+                    {% else %}
+                        <a href="{% url 'riattiva_alert' a.pk %}" class="text-green-600 hover:text-green-900" title="Riattiva">🔔</a>
+                    {% endif %}
+                    <a href="#" class="text-orange-600 hover:text-orange-900" title="Posticipa"
+                        onclick="apriModalePosticipa({{ a.pk }}, '{{ a.posticipato_a|default:a.scadenza|date:'Y-m-d' }}')">⏰</a>
+                    </div>
+                </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+      <h3 class="mt-2 text-sm font-medium text-gray-900">🎉 Nessun Alert Attivo!</h3>
+      <p class="mt-1 text-sm text-gray-500">Tutte le manutenzioni sono in regola. Ottimo lavoro!</p>
+    </div>
+    {% endif %}
+  </section>
 </div>
+
+<!-- MODALE POSTICIPA -->
+<div id="modal-posticipa" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">⏰ Posticipa Alert</h2>
+    <form id="form-posticipa">
+      {% csrf_token %}
+      <input type="hidden" id="alert-id-input">
+      <label for="nuova-scadenza" class="block text-sm font-medium text-gray-700 mb-1">Nuova scadenza</label>
+      <input type="date" id="nuova-scadenza"
+             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+             required>
+
+      <div class="mt-6 flex justify-end space-x-2">
+        <button type="button" id="chiudi-modale"
+                class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm font-medium text-gray-800">
+          Annulla
+        </button>
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium">
+          Salva
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+// --- Filtri alert ---
+document.addEventListener("DOMContentLoaded", function () {
+  const checkboxes = document.querySelectorAll(".filtro");
+  const righe = document.querySelectorAll(".alert-row");
+  const contatore = document.getElementById("alert-counter");
+
+  // elementi contatori individuali
+  const countEls = {
+    scaduto: document.getElementById("count-scaduto"),
+    in_scadenza: document.getElementById("count-in_scadenza"),
+    normale: document.getElementById("count-normale"),
+    silenziato: document.getElementById("count-silenziato"),
+  };
+
+  // crea messaggio "nessun risultato"
+  const tabella = document.getElementById("tabella-alert");
+  let emptyMsg = document.createElement("div");
+  emptyMsg.className = "text-center py-8 text-gray-500 text-sm hidden";
+  emptyMsg.innerHTML = "🎉 Nessun alert corrisponde ai filtri attivi.";
+  if (tabella) tabella.parentElement.appendChild(emptyMsg);
+
+  // chiave per localStorage
+  const STORAGE_KEY = "alert_filtro_preferenze";
+
+  // --- ripristina filtri salvati ---
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  checkboxes.forEach(cb => {
+    const key = cb.dataset.priorita || (cb.dataset.silenziato === "true" ? "silenziato" : null);
+    if (key && saved[key] !== undefined) {
+      cb.checked = saved[key];
+    }
+  });
+
+  function filtraAlert() {
+    // leggi i filtri attivi
+    const prioritaAttive = Array.from(checkboxes)
+      .filter(cb => cb.checked && cb.dataset.priorita)
+      .map(cb => cb.dataset.priorita);
+
+    const mostraSilenziati = Array.from(checkboxes)
+      .some(cb => cb.checked && cb.dataset.silenziato === "true");
+
+    // salva stato nel localStorage
+    const prefs = {};
+    checkboxes.forEach(cb => {
+      const key = cb.dataset.priorita || (cb.dataset.silenziato === "true" ? "silenziato" : null);
+      if (key) prefs[key] = cb.checked;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+
+    // conteggi e visibilità
+    const counts = { scaduto: 0, in_scadenza: 0, normale: 0, silenziato: 0 };
+    let visibili = 0;
+
+    righe.forEach(row => {
+      const priorita = row.dataset.priorita;
+      const silenziato = row.dataset.silenziato === "true";
+
+      counts[priorita] = (counts[priorita] || 0) + 1;
+      if (silenziato) counts.silenziato++;
+
+      const mostra =
+        prioritaAttive.includes(priorita) &&
+        (!silenziato || mostraSilenziati);
+
+      row.style.display = mostra ? "" : "none";
+      if (mostra) visibili++;
+    });
+
+    // aggiorna conteggi nei filtri
+    for (const k in counts) {
+      if (countEls[k]) countEls[k].textContent = counts[k];
+    }
+
+    // aggiorna contatore generale
+    contatore.textContent = `Mostrati ${visibili} alert su ${righe.length}`;
+
+    // mostra/nascondi messaggio vuoto
+    emptyMsg.classList.toggle("hidden", visibili > 0);
+  }
+
+  // ascolta i cambi
+  checkboxes.forEach(cb => cb.addEventListener("change", filtraAlert));
+
+  // esegui subito
+  filtraAlert();
+});
+
+
+
+// --- Modale Posticipa (immutato) ---
+function apriModalePosticipa(alertId, dataAttuale) {
+  const modal = document.getElementById("modal-posticipa");
+  const inputId = document.getElementById("alert-id-input");
+  const inputData = document.getElementById("nuova-scadenza");
+
+  inputId.value = alertId;
+  inputData.value = dataAttuale || "";
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+document.addEventListener("click", function (e) {
+  if (e.target && e.target.id === "chiudi-modale") {
+    const modal = document.getElementById("modal-posticipa");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+});
+
+document.addEventListener("submit", async function (e) {
+  if (e.target && e.target.id === "form-posticipa") {
+    e.preventDefault();
+    const alertId = document.getElementById("alert-id-input").value;
+    const nuovaData = document.getElementById("nuova-scadenza").value;
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+    const resp = await fetch(`/alert/${alertId}/posticipa/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": csrfToken,
+      },
+      body: `nuova_scadenza=${encodeURIComponent(nuovaData)}`,
+    });
+
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.success) {
+        alert(`Alert posticipato al ${data.nuova_data} ⏰`);
+        document.getElementById("modal-posticipa").classList.add("hidden");
+        location.reload();
+      } else {
+        alert(data.error || "Errore nel posticipo.");
+      }
+    } else {
+      alert("Errore durante la richiesta.");
+    }
+  }
+});
+</script>
 {% endblock %}
